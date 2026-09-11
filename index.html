@@ -1,814 +1,2312 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>EPAM Salesforce LEGO Competition</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,600;0,700;0,900;1,400&family=Nunito+Sans:wght@300;400;600;700;900&display=swap" rel="stylesheet"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EPAM · Salesforce Agentic Acceleration Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,500;6..12,600;6..12,700;6..12,800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --black: #0a0a0a;
-    --white: #ffffff;
-    --sf-navy: #032D60;
-    --sf-blue: #0176D3;
-    --sf-sky: #1AB9FF;
-    --epam-accent: #39C0E0;
-    --correct: #2ECC71;
-    --wrong: #E74C3C;
-    --surface: #111827;
-    --surface2: #1e2a3a;
-    --border: rgba(255,255,255,0.08);
+  :root{
+    --ink:#10122B;
+    --muted:#5C627A;
+    --faint:#8990A6;
+    --line:#E7E9F2;
+    --bg:#F7F8FC;
+    --paper:#FFFFFF;
+    --epam:#0047FF;
+    /* per-stage accent, updated by JS */
+    --accent:#001965;
+    --accent-soft:rgba(0,25,101,.08);
+    /* loop colours */
+    --roadmap:#8453D2;
+    --mock:#0047FF;
+    --prove:#0FA39A;
+    --radius:20px;
+    --shadow:0 18px 40px -22px rgba(16,18,43,.45);
+    --shadow-sm:0 8px 22px -16px rgba(16,18,43,.5);
   }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--black);
-    color: var(--white);
-    font-family: 'Nunito', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow-x: hidden;
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Nunito Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:var(--bg);
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
   }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(1,118,211,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(1,118,211,0.04) 1px, transparent 1px);
-    background-size: 48px 48px;
-    pointer-events: none;
-    z-index: 0;
+  /* shifting background tint driven by current stage accent */
+  .bg-glow{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(60% 55% at 82% 8%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%),
+      radial-gradient(55% 50% at 8% 92%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%);
+    transition:background .6s ease;
   }
+  .app{position:relative;z-index:1;display:flex;flex-direction:column;height:100%}
 
-  .glow-orb {
-    position: fixed;
-    width: 600px;
-    height: 600px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(1,118,211,0.12) 0%, transparent 70%);
-    top: -200px;
-    right: -200px;
-    pointer-events: none;
-    z-index: 0;
+  /* ---------- Header ---------- */
+  header{
+    display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;
+    padding:14px clamp(16px,4vw,40px);
+    border-bottom:1px solid var(--line);
+    background:rgba(255,255,255,.72);
+    -webkit-backdrop-filter:saturate(140%) blur(10px);
+    backdrop-filter:saturate(140%) blur(10px);
+    flex:none;position:relative;z-index:20;
   }
-
-  .container {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 780px;
-    padding: 0 24px 80px;
+  .brand{display:flex;align-items:center;gap:12px;flex:none;justify-self:start}
+  .logo{
+    font-weight:800;letter-spacing:.5px;font-size:18px;color:#fff;
+    background:var(--epam);padding:6px 10px;border-radius:8px;line-height:1;
   }
-
-  header {
-    width: 100%;
-    padding: 28px 0 32px;
-    display: flex;
-    justify-content: center;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 48px;
+  .brand .eyebrow{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+  .stepper{display:flex;gap:6px;justify-self:center;flex-wrap:wrap;justify-content:center}
+  .step{
+    display:flex;align-items:center;gap:7px;border:1px solid var(--line);
+    background:var(--paper);border-radius:999px;padding:5px 11px 5px 6px;cursor:pointer;
+    font-size:12.5px;font-weight:600;color:var(--muted);transition:.2s;line-height:1;
   }
-
-  header img {
-    height: 56px;
-    object-fit: contain;
+  .step:hover{border-color:var(--accent);color:var(--ink)}
+  .step .num{
+    width:20px;height:20px;border-radius:50%;display:grid;place-items:center;
+    background:var(--bg);color:var(--faint);font-size:11px;font-weight:700;transition:.2s;flex:none;
   }
+  .step.done .num{background:var(--s-color);color:#fff}
+  .step.current{border-color:var(--s-color);color:var(--ink);background:color-mix(in srgb,var(--s-color) 9%,#fff)}
+  .step.current .num{background:var(--s-color);color:#fff;box-shadow:0 0 0 4px color-mix(in srgb,var(--s-color) 22%,transparent)}
+  .step .lbl{display:none}
+  @media(min-width:1120px){.step .lbl{display:inline}}
+  @media(max-width:680px){.brand .eyebrow{display:none}}
+  @media(max-width:520px){header{gap:10px}}
 
-  .title-block {
-    text-align: center;
-    margin-bottom: 56px;
-    animation: fadeUp 0.6s ease both;
+  /* ---------- Appendix navigator (jump to non-stage / reference screens) ---------- */
+  .apx{position:relative;justify-self:end}
+  .apx-btn{
+    display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--paper);
+    border-radius:999px;padding:6px 11px 6px 12px;font:inherit;font-size:12.5px;font-weight:700;
+    color:var(--muted);cursor:pointer;transition:.18s;line-height:1;white-space:nowrap;
   }
+  .apx-btn:hover{border-color:var(--accent);color:var(--ink)}
+  .apx-btn.on{border-color:var(--accent);color:var(--ink);background:color-mix(in srgb,var(--accent) 9%,#fff)}
+  .apx-btn svg{flex:none}
+  .apx-btn .chev{transition:transform .2s}
+  .apx-btn[aria-expanded="true"] .chev{transform:rotate(180deg)}
+  @media(max-width:860px){.apx-btn .apx-lbl{display:none}}
 
-  .title-block .eyebrow {
-    font-family: 'Nunito Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--sf-sky);
-    margin-bottom: 16px;
+  .apx-menu{
+    position:absolute;top:calc(100% + 9px);right:0;z-index:40;width:266px;
+    background:var(--paper);border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);
+    padding:7px;opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity .2s ease,transform .2s ease,visibility .2s;
   }
-
-  .title-block h1 {
-    font-family: 'Nunito Sans', sans-serif;
-    font-size: clamp(36px, 6vw, 64px);
-    font-weight: 900;
-    line-height: 1;
-    text-transform: uppercase;
-    letter-spacing: -0.01em;
+  .apx.open .apx-menu{opacity:1;visibility:visible;transform:none}
+  .apx-hd{font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);padding:6px 10px 5px}
+  .apx-item{
+    display:grid;grid-template-columns:auto 1fr;column-gap:11px;row-gap:2px;align-items:center;
+    width:100%;text-align:left;border:0;background:none;font:inherit;padding:9px 10px;border-radius:11px;cursor:pointer;color:var(--ink);transition:.15s;
   }
+  .apx-item:hover{background:var(--bg)}
+  .apx-item.on{background:color-mix(in srgb,var(--epam) 9%,#fff)}
+  .apx-item .apx-ic{grid-row:1 / span 2;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff}
+  .apx-item .apx-t{grid-column:2;align-self:end;font-size:13.5px;font-weight:700;letter-spacing:-.01em;line-height:1.15}
+  .apx-item .apx-d{grid-column:2;align-self:start;font-size:11px;color:var(--muted);line-height:1.3}
 
-  .title-block h1 span { color: var(--sf-sky); }
+  .progress{height:3px;background:var(--line);flex:none}
+  .progress > i{display:block;height:100%;width:0;background:var(--accent);transition:width .5s cubic-bezier(.4,0,.2,1)}
 
-  .title-block p {
-    margin-top: 20px;
-    font-size: 16px;
-    font-weight: 300;
-    color: rgba(255,255,255,0.55);
-    line-height: 1.6;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
+  /* ---------- Stage area ---------- */
+  .stage-wrap{position:relative;flex:1;overflow:hidden}
+  .screen{
+    position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
+    padding:clamp(16px,3vh,40px) clamp(18px,5vw,56px);
+    opacity:0;visibility:hidden;transform:translateY(14px);
+    transition:opacity .5s ease, transform .5s ease, visibility .5s;
   }
+  .screen.active{opacity:1;visibility:visible;transform:none}
+  .inner{max-width:1080px;margin:0 auto;width:100%}
 
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 36px;
-    padding: 16px 40px;
-    background: var(--sf-blue);
-    color: var(--white);
-    font-family: 'Nunito Sans', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    border: none;
-    cursor: pointer;
-    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
-    transition: background 0.2s, transform 0.15s;
+  /* ---------- Overview / hero ---------- */
+  .screen.cover{display:flex;flex-direction:column;align-items:center;justify-content:safe center}
+  .screen.cover>.inner{width:100%}
+  .hero-grid{display:grid;grid-template-columns:minmax(280px,.92fr) minmax(380px,1.04fr);gap:clamp(28px,5vw,64px);align-items:center}
+  @media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:26px;align-items:start}}
+  .hero .kicker{font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--epam)}
+  .hero h1{font-size:clamp(30px,4.7vw,50px);line-height:1.04;letter-spacing:-.02em;margin:12px 0 16px;font-weight:800}
+  .hero h1 span{color:var(--epam)}
+  .hero p.lede{font-size:clamp(15px,1.7vw,18px);color:var(--muted);max-width:480px;line-height:1.55}
+
+  /* the vertical journey through the six stages */
+  .journey{display:flex;flex-direction:column}
+  .jstep{position:relative;display:grid;grid-template-columns:46px 1fr;gap:15px;align-items:start;text-align:left;
+    background:none;border:0;padding:0 0 14px;cursor:pointer;font:inherit;color:var(--ink);opacity:0;transform:translateY(10px)}
+  .screen.active .journey .jstep{animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards}
+  .jstep:last-child{padding-bottom:0}
+  .jstep::before{content:"";position:absolute;left:22px;top:44px;bottom:-2px;width:2px;
+    background:linear-gradient(var(--n-color),var(--next-color));opacity:.55}
+  .jstep:last-child::before{display:none}
+  .jnode{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:17px;color:#fff;
+    background:var(--n-color);box-shadow:0 9px 18px -8px var(--n-color);position:relative;z-index:1;transition:transform .18s}
+  .jbody{display:block;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 16px;box-shadow:var(--shadow-sm);
+    transition:transform .18s ease,box-shadow .18s ease,border-color .18s}
+  .jstep:hover .jbody{transform:translateX(4px);box-shadow:var(--shadow);border-color:var(--n-color)}
+  .jstep:hover .jnode{transform:scale(1.07)}
+  .jhd{display:flex;align-items:center;gap:9px;font-size:15.5px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+  .jhd .jic{color:var(--n-color);display:grid;place-items:center;flex:none}
+  .jdesc{display:block;font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:4px}
+
+  /* ---------- Stage screens ---------- */
+  .stage-head{display:flex;align-items:flex-start;gap:18px;margin-bottom:6px}
+  .stage-num{
+    width:62px;height:62px;border-radius:16px;flex:none;display:grid;place-items:center;color:#fff;
+    font-size:26px;font-weight:800;background:var(--accent);box-shadow:0 12px 26px -12px var(--accent);position:relative;
   }
-  .btn-primary:hover { background: var(--sf-sky); transform: translateY(-2px); color: var(--black); }
+  .stage-num svg{position:absolute;width:20px;height:20px;right:-6px;bottom:-6px;background:#fff;border-radius:8px;padding:3px;color:var(--accent);box-shadow:var(--shadow-sm)}
+  .stage-head .meta .of{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  .stage-head .meta h2{font-size:clamp(23px,3.2vw,34px);font-weight:800;letter-spacing:-.02em;line-height:1.08;margin-top:3px}
+  .kick{font-size:clamp(15px,1.7vw,18.5px);color:var(--muted);line-height:1.5;margin:14px 0 18px;max-width:760px}
+  .kick strong{color:var(--ink);font-weight:600}
 
-  .question-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    padding: 40px 44px;
-    margin-bottom: 24px;
-    animation: fadeUp 0.4s ease both;
-    position: relative;
-    overflow: hidden;
+  /* progressive steps toward stage completion */
+  .steps{position:relative;max-width:800px;margin-top:4px}
+  .stp{position:relative;display:grid;grid-template-columns:48px 1fr;gap:18px;padding-bottom:22px;opacity:0;transform:translateY(10px)}
+  .screen.active .stp{animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards}
+  .stp::before{content:"";position:absolute;left:23px;top:12px;bottom:-10px;width:2px;background:color-mix(in srgb,var(--accent) 28%,#fff)}
+  .stp:last-child::before{display:none}
+  .stp .mk{
+    width:48px;height:48px;border-radius:50%;display:grid;place-items:center;
+    font-weight:800;font-size:16px;background:var(--paper);color:var(--accent);
+    border:2px solid var(--accent);position:relative;z-index:1;box-shadow:var(--shadow-sm);
   }
-
-  .question-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--sf-blue), var(--sf-sky));
+  .stp.hot .mk{color:var(--accent);border-color:var(--accent)}
+  .stp .bd{padding-top:10px;min-width:0}
+  .stp .bd h4{font-size:16px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap;line-height:1.25}
+  .stp.hot .bd h4{color:var(--ink)}
+  .stp .bd p{color:var(--muted);font-size:13.5px;line-height:1.55;margin-top:6px;max-width:600px}
+  .stp .tag{font-size:9px;font-weight:800;letter-spacing:.1em;color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,#fff);padding:3px 7px;border-radius:6px}
+  /* completion node */
+  .stp.fin .mk{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 12px 24px -12px var(--accent)}
+  .stp.fin .bd .lead{display:block;font-size:10.5px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+  .stp.fin .bd h4{color:var(--ink);font-weight:700}
+  .loop-exit{
+    display:flex;align-items:center;gap:10px;margin-top:4px;font-size:12.5px;font-weight:600;color:var(--accent);
+    background:color-mix(in srgb,var(--accent) 8%,#fff);border:1px solid color-mix(in srgb,var(--accent) 24%,#fff);
+    border-radius:12px;padding:11px 14px;
   }
+  .loop-exit svg{flex:none}
 
-  .question-type-badge {
-    display: inline-block;
-    font-family: 'Nunito Sans', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--sf-sky);
-    background: rgba(26,185,255,0.1);
-    padding: 4px 10px;
-    border-radius: 2px;
-    margin-bottom: 18px;
+  @keyframes rise{to{opacity:1;transform:none}}
+  @keyframes fadein{to{opacity:1}}
+  @keyframes drawArc{to{stroke-dashoffset:0}}
+  @keyframes drawLine{to{stroke-dashoffset:0}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes dashspin{to{transform:rotate(-360deg)}}
+  @keyframes growUp{to{transform:scaleY(1)}}
+  @keyframes pop{to{opacity:1;transform:scale(1)}}
+
+  /* ---------- Stage body: signature diagram + steps ---------- */
+  .stage-body{display:grid;grid-template-columns:minmax(290px,.92fr) minmax(330px,1.08fr);gap:36px;align-items:start;margin-top:6px}
+  @media(max-width:940px){.stage-body{grid-template-columns:1fr;gap:26px}}
+  .stage-body .steps{max-width:none;margin-top:2px;order:1}
+  .stage-body .diagram{order:2}
+  .diagram{position:relative;min-width:0}
+  .dgm-title{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+  .dgm{width:100%;height:auto;overflow:visible;display:block}
+  .dgm text{font-family:inherit}
+  .dgm .axis{stroke:var(--line);stroke-width:1.5}
+  .dgm .gl{stroke:var(--line);stroke-width:1;stroke-dasharray:2 5}
+  .dgm .axt{fill:var(--faint);font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+  .dgm .ql{font-size:12.5px;font-weight:800;letter-spacing:.01em}
+  .dgm .qs{font-size:9.5px;font-weight:600;fill:var(--faint)}
+  .dgm .nl{font-size:11px;font-weight:700;fill:var(--ink)}
+  .dgm .nsub{font-size:9px;font-weight:700;letter-spacing:.03em}
+  .dgm .val{font-size:10px;font-weight:700;fill:var(--ink)}
+  .dgm .a-fill{fill:var(--accent)}
+  .dgm .a-stroke{stroke:var(--accent);fill:none}
+  .dgm .a-tint{fill:color-mix(in srgb,var(--accent) 15%,#fff)}
+  .dgm .a-tint2{fill:color-mix(in srgb,var(--accent) 7%,#fff)}
+  .dgm .a-text{fill:var(--accent)}
+  .dgm .a-line{stroke:var(--accent);fill:none}
+  .dgm .line{fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+  .screen.active .dgm .draw{animation:drawLine 1.15s ease forwards}
+  .dgm .draw{stroke-dasharray:100;stroke-dashoffset:100}
+  .screen.active .dgm .bar{animation:growUp .75s cubic-bezier(.2,.7,.3,1) forwards}
+  .dgm .bar{transform:scaleY(0);transform-box:fill-box;transform-origin:bottom}
+  .screen.active .dgm .pop{animation:pop .5s cubic-bezier(.2,.7,.3,1) forwards}
+  .dgm .pop{opacity:0;transform:scale(.4);transform-box:fill-box;transform-origin:center}
+  .dgm-cap{margin-top:16px;font-size:12.5px;line-height:1.55;color:var(--muted);border-left:3px solid var(--accent);padding-left:13px}
+  .dgm-cap b{color:var(--ink);font-weight:600}
+  .dgm-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+  .dgm-chips span{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;color:var(--muted);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+  .dgm-chips i{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+
+  /* ---------- Stage 5 loop ---------- */
+  .calib{display:grid;grid-template-columns:1fr minmax(300px,400px);gap:30px;align-items:start}
+  @media(max-width:860px){.calib{grid-template-columns:1fr;justify-items:center}}
+  @media(min-width:861px){.calib>.loop{position:sticky;top:6px}}
+  .calib-detail{gap:12px;order:1}
+  .calib>.loop{order:2}
+  .loop{position:relative;width:min(100%,300px);margin:0 auto;aspect-ratio:344/280}
+
+  /* stage 5: eval-journey convergence chart, paired with the loop */
+  .evals{margin-top:8px}
+  .evals-head{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+  .evals-sub{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  .evals-legend{display:flex;gap:14px;font-size:10.5px;font-weight:700;color:var(--muted);align-items:center}
+  .evals-legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:3px}
+  .evals-legend .acc{background:var(--accent)}
+  .evals-legend .prc{background:var(--mock)}
+  .evals .target{stroke:#AEB6CC;stroke-width:1.3;stroke-dasharray:5 5;fill:none}
+  .evals .tgt-lab{fill:var(--faint);font-size:9.5px;font-weight:800;letter-spacing:.08em}
+  .evals .line{stroke-width:2.4}
+
+  /* loop-synced eval cycle: comet 4s × 8 laps = 32s; dots appear at end of laps 1-7, hold then reset */
+  @keyframes evd1{0%,11%{opacity:0;transform:scale(.3)}13%,95%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.3)}}
+  @keyframes evd2{0%,23%{opacity:0;transform:scale(.3)}25%,95%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.3)}}
+  @keyframes evd3{0%,36%{opacity:0;transform:scale(.3)}38%,95%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.3)}}
+  @keyframes evd4{0%,48%{opacity:0;transform:scale(.3)}50%,95%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.3)}}
+  @keyframes evd5{0%,61%{opacity:0;transform:scale(.3)}63%,95%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.3)}}
+  @keyframes evd6{0%,73%{opacity:0;transform:scale(.3)}75%,95%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.3)}}
+  @keyframes evd7{0%,86%{opacity:0;transform:scale(.3)}88%,95%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.3)}}
+  @keyframes evline{
+    0%,12.5%{stroke-dashoffset:100;opacity:1}
+    25%{stroke-dashoffset:83.33}
+    37.5%{stroke-dashoffset:66.67}
+    50%{stroke-dashoffset:50}
+    62.5%{stroke-dashoffset:33.33}
+    75%{stroke-dashoffset:16.67}
+    87.5%,96%{stroke-dashoffset:0;opacity:1}
+    100%{stroke-dashoffset:0;opacity:0}
   }
+  .evals .evdot{transform-box:fill-box;transform-origin:center;opacity:0}
+  .evals .evline{stroke-dasharray:100;stroke-dashoffset:100}
+  .screen.active .evals .evd1{animation:evd1 32s linear infinite}
+  .screen.active .evals .evd2{animation:evd2 32s linear infinite}
+  .screen.active .evals .evd3{animation:evd3 32s linear infinite}
+  .screen.active .evals .evd4{animation:evd4 32s linear infinite}
+  .screen.active .evals .evd5{animation:evd5 32s linear infinite}
+  .screen.active .evals .evd6{animation:evd6 32s linear infinite}
+  .screen.active .evals .evd7{animation:evd7 32s linear infinite}
+  .screen.active .evals .evline{animation:evline 32s linear infinite}
+  .loop svg{width:100%;height:100%;overflow:visible;transform:rotate(0deg)}
+  .loop .seg{fill:none;stroke-width:30;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100}
+  .screen.active .loop .seg{animation:drawArc .9s ease forwards}
+  .screen.active .loop .segA{animation-delay:.15s}
+  .screen.active .loop .segB{animation-delay:.5s}
+  .screen.active .loop .segC{animation-delay:.85s}
 
-  .question-text {
-    font-family: 'Nunito Sans', sans-serif;
-    font-size: clamp(20px, 3vw, 28px);
-    font-weight: 700;
-    line-height: 1.25;
-    color: var(--white);
+  /* outer cycle - visible track + travelling comet (the loop never stops) */
+  .loop .cyc-track{fill:none;stroke:#B4BCD2;stroke-width:2.6;stroke-linecap:round;stroke-dasharray:0.5 8.5;opacity:0}
+  .screen.active .loop .cyc-track{opacity:1;transition:opacity .5s ease .9s}
+  .loop .cyc-run{fill:none;stroke:var(--accent);stroke-width:3.6;stroke-linecap:round;transform-origin:120px 120px;opacity:0}
+  .loop .cyc-head{fill:var(--accent);transform-origin:120px 120px;opacity:0}
+  .screen.active .loop .cyc-run,
+  .screen.active .loop .cyc-head{animation:fadein .5s ease .9s forwards, spin 4s linear infinite}
+
+  /* stage labels - now outside the ring, reading on the light background */
+  .loop .slbl{opacity:0}
+  .screen.active .loop .slbl{animation:fadein .5s ease forwards}
+  .screen.active .loop .slblA{animation-delay:.55s}
+  .screen.active .loop .slblB{animation-delay:.9s}
+  .screen.active .loop .slblC{animation-delay:1.2s}
+  .loop .slbl .disc{stroke:#fff;stroke-width:2}
+  .loop .slbl .idx{font-size:12.5px;font-weight:800;fill:#fff}
+  .loop .slbl .word{font-size:12px;font-weight:800;letter-spacing:.06em}
+
+  /* hub */
+  .loop .hub-plate{fill:#fff;filter:url(#hubShadow)}
+  .loop .hub-title{font-size:13px;font-weight:800;letter-spacing:.07em;fill:var(--ink)}
+  .loop .hub-sub{font-size:11px;font-weight:600;fill:var(--muted)}
+
+  .calib-detail{display:grid;gap:14px;width:100%}
+  .dcard{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow-sm)}
+  .dcard .dh{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px;letter-spacing:-.01em}
+  .dcard .chip{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:800;flex:none}
+  .dcard ul{list-style:none;margin-top:10px;display:grid;gap:7px}
+  .dcard li{position:relative;padding-left:18px;font-size:13px;color:var(--muted);line-height:1.45}
+  .dcard li::before{content:"";position:absolute;left:0;top:7px;width:7px;height:7px;border-radius:50%;background:var(--c)}
+  .dcard li b{color:var(--ink);font-weight:600}
+
+  /* ---------- Closing: the compounding staircase ---------- */
+  .close{display:flex;flex-direction:column;gap:clamp(16px,2.6vh,26px)}
+  .close-head{display:flex;align-items:flex-start;gap:15px;max-width:880px}
+  .close-head .ic{width:46px;height:46px;border-radius:13px;flex:none;background:linear-gradient(135deg,var(--roadmap),var(--mock),var(--prove));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm)}
+  .close-head h2{font-size:clamp(23px,3.2vw,32px);font-weight:800;letter-spacing:-.02em;line-height:1.06}
+  .close-lede{color:var(--muted);font-size:clamp(14px,1.6vw,16.5px);line-height:1.55;margin-top:7px}
+  .close-lede b{color:var(--ink);font-weight:600}
+
+  .stair{width:100%;max-width:920px;margin:0 auto}
+  .stair svg{width:100%;height:auto;overflow:visible;display:block}
+  .stair-axis{stroke:var(--line);stroke-width:1.5}
+  .stair-ax{fill:var(--faint);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+  .stair-step{opacity:0;transform:translateY(10px)}
+  .screen.active .stair-step{animation:rise .55s cubic-bezier(.2,.7,.3,1) forwards}
+  .stair-step .step-bar{filter:drop-shadow(0 9px 14px rgba(16,18,43,.16))}
+  .step-num{font-size:15px;font-weight:800}
+  .step-key{font-size:12.5px;font-weight:800;fill:var(--ink);letter-spacing:-.01em}
+  .step-out{font-size:9.5px;font-weight:600;fill:var(--faint);letter-spacing:.02em}
+  .stair-line{fill:none;stroke:var(--epam);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100}
+  .screen.active .stair-line{animation:drawLine 1.2s ease .9s forwards}
+  .stair-tip{fill:var(--epam);opacity:0}
+  .screen.active .stair-tip{animation:fadein .4s ease 2s forwards}
+  .stair-note{fill:var(--epam);font-size:12px;font-weight:800;letter-spacing:.03em;opacity:0}
+  .screen.active .stair-note{animation:fadein .5s ease 1.7s forwards}
+
+  .benefits{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+  @media(max-width:900px){.benefits{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:500px){.benefits{grid-template-columns:1fr}}
+  .bcard{position:relative;overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:15px;box-shadow:var(--shadow-sm);opacity:0;transform:translateY(10px)}
+  .bcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--bc,var(--epam))}
+  .screen.active .bcard{animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards}
+  .bcard .bic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;color:#fff;background:var(--bc,var(--epam));margin-bottom:10px}
+  .bcard h4{font-size:14px;font-weight:800;letter-spacing:-.01em;line-height:1.2}
+  .bcard p{font-size:12px;color:var(--muted);line-height:1.5;margin-top:6px}
+
+  /* ---------- Value-chain AI maturity map ---------- */
+  .vcm{display:flex;flex-direction:column;gap:13px}
+  .vcm-eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--epam)}
+  .vcm-intro{font-size:13.5px;color:var(--muted);line-height:1.5;max-width:780px;margin-top:-2px}
+  .vcm-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+  .vcm-tab{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:7px 16px;font:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;transition:.18s}
+  .vcm-tab:hover{border-color:var(--epam);color:var(--ink)}
+  .vcm-tab.on{background:var(--epam);border-color:var(--epam);color:#fff;box-shadow:0 10px 22px -14px var(--epam)}
+  .vcm-body{opacity:0;animation:fadein .45s ease forwards;display:flex;flex-direction:column;gap:13px}
+
+  .vcm-head{display:flex;flex-wrap:wrap;align-items:flex-start;gap:14px 24px}
+  .vcm-head > div:not(.vcm-kpi){flex:1 1 340px;min-width:0}
+  .vcm-head h2{font-size:clamp(19px,2.5vw,26px);font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .vcm-head .sub{font-size:13px;color:var(--muted);margin-top:5px;max-width:660px;line-height:1.5}
+  .vcm-kpi{flex:none;margin-left:auto;text-align:right;min-width:200px}
+  .vcm-kpi .pct{font-size:34px;font-weight:800;color:#1BA877;line-height:1;letter-spacing:-.02em}
+  .vcm-kpi .lab{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-top:3px}
+  .vcm-bar{display:flex;height:8px;border-radius:999px;overflow:hidden;background:var(--line);margin-top:9px}
+  .vcm-bar i{height:100%}
+  .vcm-counts{font-size:11px;color:var(--muted);margin-top:6px}
+  .vcm-counts b{color:var(--ink);font-weight:700}
+
+  .vcm-grid{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px}
+  .vcm-col{flex:1 1 0;min-width:112px;display:flex;flex-direction:column;gap:5px}
+  .vcm-col-h{background:var(--epam);color:#fff;font-size:11px;font-weight:700;line-height:1.18;padding:8px 9px;border-radius:9px;min-height:44px;display:flex;align-items:center}
+  .vcm-cell{font-size:10.5px;line-height:1.18;font-weight:600;padding:7px 8px 7px 9px;border-radius:8px;border:1px solid;border-left-width:4px}
+  .vcm-cell.f{background:color-mix(in srgb,#1BA877 13%,#fff);border-color:color-mix(in srgb,#1BA877 30%,#fff);border-left-color:#1BA877;color:#0B5A3F}
+  .vcm-cell.p{background:color-mix(in srgb,#2D5BD7 10%,#fff);border-color:color-mix(in srgb,#2D5BD7 26%,#fff);border-left-color:#2D5BD7;color:#22357F}
+  .vcm-cell.n{background:#F1F3F8;border-color:var(--line);border-left-color:#AEB6CC;color:var(--faint)}
+
+  .vcm-panels{display:grid;grid-template-columns:1.12fr .88fr;gap:13px}
+  .vcm-panels.stack{grid-template-columns:1fr}
+  @media(max-width:820px){.vcm-panels{grid-template-columns:1fr}}
+  .vcm-panel{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow-sm)}
+  .vcm-panel h3{font-size:13px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .vcm-panel h3 span{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .vcm-caps{display:grid;grid-template-columns:1fr 1fr;gap:11px 16px;margin-top:12px}
+  @media(max-width:560px){.vcm-caps{grid-template-columns:1fr}}
+  .vcm-cap{border-left:3px solid var(--epam);padding-left:10px}
+  .vcm-cap h4{font-size:12.5px;font-weight:800;letter-spacing:-.01em;line-height:1.2}
+  .vcm-cap p{font-size:11px;color:var(--muted);line-height:1.4;margin-top:3px}
+  .vcm-plat{margin-top:11px;display:flex;flex-direction:column;gap:8px}
+  .vcm-plat .row{display:grid;grid-template-columns:128px 1fr;gap:10px;align-items:baseline}
+  .vcm-plat .a{font-size:11.5px;font-weight:700;color:var(--ink)}
+  .vcm-plat .t{font-size:11.5px;color:var(--epam);font-weight:600;line-height:1.35}
+
+  .vcm-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  @media(max-width:700px){.vcm-stats{grid-template-columns:1fr}}
+  .vcm-stat{background:color-mix(in srgb,var(--epam) 5%,#fff);border:1px solid color-mix(in srgb,var(--epam) 16%,#fff);border-radius:12px;padding:11px 14px;display:flex;gap:11px;align-items:baseline}
+  .vcm-stat b{font-size:14.5px;font-weight:800;color:var(--epam);white-space:nowrap}
+  .vcm-stat span{font-size:11px;color:var(--muted);line-height:1.4}
+  .vcm-legend{display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-size:11.5px;color:var(--muted);padding-top:2px}
+  .vcm-legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:7px;vertical-align:-1px;border:1px solid}
+  .vcm-legend .f{background:color-mix(in srgb,#1BA877 18%,#fff);border-color:#1BA877}
+  .vcm-legend .p{background:color-mix(in srgb,#2D5BD7 16%,#fff);border-color:#2D5BD7}
+  .vcm-legend .n{background:#F1F3F8;border-color:#AEB6CC}
+
+  /* ---------- Footer nav ---------- */
+  footer{
+    display:flex;align-items:center;gap:14px;flex:none;
+    padding:14px clamp(16px,4vw,40px);border-top:1px solid var(--line);
+    background:rgba(255,255,255,.72);-webkit-backdrop-filter:saturate(140%) blur(10px);backdrop-filter:saturate(140%) blur(10px);
   }
-
-  .options-grid {
-    display: grid;
-    gap: 12px;
-    animation: fadeUp 0.5s ease 0.1s both;
+  .dots{display:flex;gap:8px;margin:0 auto}
+  .dots i{width:9px;height:9px;border-radius:50%;background:var(--line);cursor:pointer;transition:.2s}
+  .dots i.on{background:var(--accent);transform:scale(1.25)}
+  .btn{
+    border:1px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;font-weight:600;font-size:14px;
+    padding:11px 20px;border-radius:11px;cursor:pointer;display:inline-flex;align-items:center;gap:9px;transition:.18s;
   }
+  .btn:hover{border-color:var(--accent)}
+  .btn[disabled]{opacity:.35;cursor:not-allowed}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 12px 24px -14px var(--accent)}
+  .btn.primary:hover{filter:brightness(1.06)}
+  .btn svg{width:17px;height:17px}
+  .hint{font-size:11.5px;color:var(--faint);flex:none}
+  @media(max-width:640px){.hint{display:none}}
 
-  .option-btn {
-    width: 100%;
-    text-align: left;
-    padding: 16px 22px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: rgba(255,255,255,0.8);
-    font-family: 'Nunito', sans-serif;
-    font-size: 15px;
-    font-weight: 400;
-    cursor: pointer;
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.15s;
-    position: relative;
-    overflow: hidden;
+  /* ---------- Stage 4 drill-down: "the cost model" (opt-in overlay) ---------- */
+  .deeper-cta{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    width:100%;margin-top:22px;padding:15px 20px;border-radius:16px;cursor:pointer;font:inherit;text-align:left;
+    background:color-mix(in srgb,var(--accent) 8%,#fff);
+    border:1px solid color-mix(in srgb,var(--accent) 26%,#fff);color:var(--ink);transition:.18s;
   }
+  .deeper-cta:hover{border-color:var(--accent);box-shadow:var(--shadow-sm);transform:translateY(-1px)}
+  .deeper-cta .dc-tx{min-width:0}
+  .deeper-cta .dc-t{font-size:14.5px;font-weight:800;letter-spacing:-.01em;line-height:1.2}
+  .deeper-cta .dc-s{display:block;font-size:12px;color:var(--muted);margin-top:3px;font-weight:500;line-height:1.4}
+  .deeper-cta .dc-go{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap;flex:none}
 
-  .option-btn .opt-letter {
-    font-family: 'Nunito Sans', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    letter-spacing: 0.05em;
-    color: var(--sf-sky);
-    min-width: 22px;
-    text-transform: uppercase;
+  .drill{
+    position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;
+    background:rgba(247,248,252,.9);-webkit-backdrop-filter:saturate(140%) blur(16px);backdrop-filter:saturate(140%) blur(16px);
+    opacity:0;visibility:hidden;pointer-events:none;transition:opacity .35s ease,visibility .35s;
   }
+  .drill.open{opacity:1;visibility:visible;pointer-events:auto}
+  .drill-top{display:flex;align-items:center;gap:16px;flex:none;padding:13px clamp(16px,4vw,40px);
+    border-bottom:1px solid var(--line);background:rgba(255,255,255,.72)}
+  .drill-eyebrow{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);flex:none}
+  .drill-prog{display:flex;gap:7px;align-items:center;margin:0 auto}
+  .drill-prog i{width:26px;height:4px;border-radius:2px;background:var(--line);transition:.3s}
+  .drill-prog i.on{background:var(--accent);width:36px}
+  /* cost-model stepper - same pill idiom as the main header, scoped to the overlay accent */
+  .drill-nav{display:flex;gap:6px;align-items:center;justify-content:center;margin:0 auto;flex-wrap:wrap}
+  .drill-step{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--paper);
+    border-radius:999px;padding:5px 12px 5px 6px;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600;color:var(--muted);transition:.2s;line-height:1}
+  .drill-step:hover{border-color:var(--accent);color:var(--ink)}
+  .drill-step .dnum{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--bg);color:var(--faint);font-size:11px;font-weight:700;transition:.2s;flex:none}
+  .drill-step.done .dnum{background:var(--accent);color:#fff}
+  .drill-step.current{border-color:var(--accent);color:var(--ink);background:color-mix(in srgb,var(--accent) 9%,#fff)}
+  .drill-step.current .dnum{background:var(--accent);color:#fff;box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent)}
+  @media(max-width:640px){.drill-step .dlbl{display:none}}
+  .d-close{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--paper);color:var(--muted);
+    font:inherit;font-weight:600;font-size:13px;padding:8px 14px;border-radius:10px;cursor:pointer;transition:.18s;flex:none}
+  .d-close:hover{border-color:var(--accent);color:var(--ink)}
 
-  .option-btn:hover:not(:disabled) {
-    border-color: var(--sf-blue);
-    background: rgba(1,118,211,0.15);
-    color: var(--white);
-    transform: translateX(4px);
+  .drill-body{position:relative;flex:1;overflow:hidden}
+  .drill-screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
+    padding:clamp(16px,3vh,38px) clamp(18px,5vw,56px);
+    opacity:0;visibility:hidden;transform:translateY(14px);
+    transition:opacity .45s ease,transform .45s ease,visibility .45s}
+  .drill-screen.active{opacity:1;visibility:visible;transform:none}
+  .drill-inner{max-width:1000px;margin:0 auto;width:100%}
+  .drill-head .of{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  .drill-head h2{font-size:clamp(22px,3vw,32px);font-weight:800;letter-spacing:-.02em;line-height:1.08;margin-top:4px}
+  .drill-lede{font-size:clamp(14px,1.6vw,17px);color:var(--muted);line-height:1.5;margin:12px 0 18px;max-width:720px}
+  .drill-lede b{color:var(--ink);font-weight:600}
+  .drill-grid{display:grid;grid-template-columns:minmax(300px,1.05fr) minmax(300px,.95fr);gap:34px;align-items:start}
+  @media(max-width:900px){.drill-grid{grid-template-columns:1fr;gap:24px}}
+  .drill-grid.two-dgm{grid-template-columns:1fr 1fr;gap:24px}
+  @media(max-width:820px){.drill-grid.two-dgm{grid-template-columns:1fr}}
+
+  /* re-trigger the shared .dgm animation primitives inside an active drill screen */
+  .drill-screen.active .dgm .draw{animation:drawLine 1.15s ease forwards}
+  .drill-screen.active .dgm .bar{animation:growUp .75s cubic-bezier(.2,.7,.3,1) forwards}
+  .drill-screen.active .dgm .pop{animation:pop .5s cubic-bezier(.2,.7,.3,1) forwards}
+
+  /* layered "show the arithmetic" reveal */
+  .reveal-btn{display:inline-flex;align-items:center;gap:9px;margin-top:16px;border:1px dashed color-mix(in srgb,var(--accent) 45%,#fff);
+    background:var(--accent-soft);color:var(--accent);font:inherit;font-weight:700;font-size:12.5px;padding:9px 14px;border-radius:11px;cursor:pointer;transition:.18s}
+  .reveal-btn:hover{border-style:solid}
+  .reveal-btn svg{transition:transform .25s}
+  .reveal-btn.on svg{transform:rotate(180deg)}
+  .reveal{max-height:0;overflow:hidden;opacity:0;transition:max-height .4s ease,opacity .35s ease,margin .4s ease}
+  .reveal.show{max-height:720px;opacity:1;margin-top:14px}
+  .reveal-card{background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;padding:15px 17px;box-shadow:var(--shadow-sm)}
+  .reveal-card .frm{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;font-weight:600;color:var(--ink);
+    background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin:2px 0 12px;overflow-x:auto}
+  .reveal-card ul{list-style:none;display:grid;gap:7px}
+  .reveal-card li{position:relative;padding-left:17px;font-size:12.5px;color:var(--muted);line-height:1.5}
+  .reveal-card li::before{content:"";position:absolute;left:0;top:7px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+  .reveal-card li b{color:var(--ink);font-weight:700}
+  .reveal-note{font-size:11px;color:var(--faint);margin-top:11px;font-style:italic}
+
+  .drill-foot{display:flex;align-items:center;gap:14px;flex:none;padding:13px clamp(16px,4vw,40px);
+    border-top:1px solid var(--line);background:rgba(255,255,255,.72)}
+  .drill-onward{display:inline-flex;align-items:center;gap:9px;margin:0 auto;font-size:12.5px;font-weight:600;color:var(--muted)}
+  .drill-onward a{color:var(--accent);font-weight:700;cursor:pointer;text-decoration:none;border-bottom:1.5px solid color-mix(in srgb,var(--accent) 40%,#fff)}
+  .drill-onward a:hover{border-bottom-color:var(--accent)}
+
+  /* routing animation: task stream + two diverging cost meters */
+  .route-wrap{margin-top:6px}
+  .drill-sub{font-size:13px;color:var(--muted);line-height:1.5;margin:6px 0 6px;max-width:470px}
+  .drill-sub b{color:var(--ink);font-weight:600}
+  .route-canvas{display:block;width:100%;height:auto;margin-top:4px}
+  .route-meters{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;margin-top:14px}
+  @media(max-width:620px){.route-meters{grid-template-columns:1fr;gap:9px}}
+  .rmeter{display:flex;flex-direction:column;gap:3px;padding:11px 15px;border:1px solid var(--line);border-radius:13px;background:var(--paper)}
+  .rmeter.leg{border-left:3px solid #AEB6CC}
+  .rmeter.cas{border-left:3px solid var(--accent);align-items:flex-end;text-align:right}
+  .rmeter.mid{border:0;background:none;align-items:center;text-align:center;gap:1px}
+  .rmk{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .rmv{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+  .rmeter.cas .rmv{color:var(--accent)}
+  .rmeter.mid .rmk{color:var(--muted)}
+  .rmv.save{font-family:inherit;font-size:30px;font-weight:800;color:#1BA877}
+  .route-meters.compact{gap:8px;margin-top:10px}
+  .route-meters.compact .rmeter{padding:8px 11px;border-radius:11px}
+  .route-meters.compact .rmk{font-size:9px}
+  .route-meters.compact .rmv{font-size:16px}
+  .route-meters.compact .rmv.save{font-size:19px}
+  .two-levers{margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+
+  /* ---------- Framework hero: waves → phase circles → road ---------- */
+  .screen.cover{justify-content:safe start;padding-top:clamp(14px,3vh,34px)}
+  .pchips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+  .pchip{font-size:11.5px;font-weight:700;color:var(--epam);background:color-mix(in srgb,var(--epam) 7%,#fff);
+    border:1px solid color-mix(in srgb,var(--epam) 20%,#fff);border-radius:999px;padding:5px 13px}
+  .fw{width:100%;max-width:1000px;margin:clamp(14px,2.4vh,26px) auto 4px}
+  .fw svg{width:100%;height:auto;overflow:visible;display:block}
+  .fw-prin{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;fill:var(--faint)}
+  .fw-wave{fill:none;stroke-width:2.6;stroke-linecap:round;opacity:.9;stroke-dasharray:340;stroke-dashoffset:340}
+  .screen.active .fw-wave{animation:drawLine 1.3s ease forwards}
+  .fw-bundle{stroke:#C7CCDB;stroke-width:2.4;opacity:0}
+  .screen.active .fw-bundle{animation:fadein .5s ease .8s forwards}
+  .fw-circ{opacity:0;transform:scale(.86);transform-box:fill-box;transform-origin:center}
+  .screen.active .fw-circ{animation:pop .55s cubic-bezier(.2,.7,.3,1) forwards}
+  .fw-ctitle{font-size:15px;font-weight:800;letter-spacing:.02em}
+  .fw-cout{font-size:9.5px;font-weight:700;fill:var(--faint)}
+  .fw-road{fill:none;stroke:#5BA845;stroke-width:6;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100}
+  .screen.active .fw-road{animation:drawArc 1.1s ease 1.3s forwards}
+  .fw-road-tip{fill:#5BA845;opacity:0}
+  .screen.active .fw-road-tip{animation:fadein .4s ease 2.3s forwards}
+  .fw-road-lab{font-size:11px;font-weight:800;letter-spacing:.03em;fill:#4E9A3E}
+  .fw-band{opacity:0}
+  .screen.active .fw-band{animation:fadein .6s ease 1.5s forwards}
+  /* journey as a responsive grid of the seven nodes */
+  .journey-grid{display:grid;grid-template-columns:minmax(0,660px);gap:10px;max-width:700px;margin:6px auto 0;width:100%}
+  .journey-grid .jstep{padding-bottom:0}
+  .journey-grid .jstep::before{display:none}
+  .jhd .jphase{margin-left:auto;font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--pc);background:color-mix(in srgb,var(--pc) 12%,#fff);border-radius:999px;padding:3px 8px;white-space:nowrap}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important;transition:none!important}
+    .stp,.loop .slbl,.loop .cyc-track,.loop .cyc-run,.loop .cyc-head,
+    .journey .jstep,.stair-step,.stair-tip,.stair-note,.bcard,.vcm-body,
+    .fw-wave,.fw-circ,.fw-road,.fw-road-tip,.fw-band,.fw-bundle,
+    .evals .evdot{opacity:1!important;transform:none!important}
+    .loop .seg,.stair-line,.evals .evline,.fw-wave,.fw-road{stroke-dashoffset:0!important}
+    .drill,.drill-screen{transition:none!important}
   }
-
-  .option-btn.correct { border-color: var(--correct); background: rgba(46,204,113,0.12); color: var(--white); }
-  .option-btn.correct .opt-letter { color: var(--correct); }
-  .option-btn.wrong { border-color: var(--wrong); background: rgba(231,76,60,0.12); color: rgba(255,255,255,0.6); }
-  .option-btn.wrong .opt-letter { color: var(--wrong); }
-  .option-btn:disabled { cursor: default; }
-
-  .btn-next {
-    display: none;
-    margin-top: 24px;
-    padding: 14px 36px;
-    background: transparent;
-    color: var(--sf-sky);
-    font-family: 'Nunito Sans', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    border: 1px solid var(--sf-sky);
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
-  }
-  .btn-next:hover { background: var(--sf-sky); color: var(--black); }
-  .btn-next.visible { display: inline-flex; align-items: center; gap: 8px; }
-
-  .answer-feedback {
-    display: none;
-    margin-top: 20px;
-    padding: 14px 20px;
-    border-radius: 2px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1.5;
-    border-left: 3px solid;
-    animation: fadeUp 0.3s ease both;
-  }
-  .answer-feedback.correct { background: rgba(46,204,113,0.08); border-color: var(--correct); color: rgba(255,255,255,0.75); }
-  .answer-feedback.wrong { background: rgba(231,76,60,0.08); border-color: var(--wrong); color: rgba(255,255,255,0.75); }
-  .answer-feedback.visible { display: block; }
-
-  /* RESULTS */
-  .results-screen {
-    text-align: center;
-    animation: fadeUp 0.6s ease both;
-  }
-
-  .result-icon {
-    font-size: 72px;
-    display: block;
-    margin-bottom: 24px;
-    line-height: 1;
-  }
-
-  .results-title {
-    font-family: 'Nunito Sans', sans-serif;
-    font-size: clamp(28px, 4vw, 44px);
-    font-weight: 900;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-  .results-title span { color: var(--sf-sky); }
-
-  .results-subtitle {
-    font-size: 15px;
-    color: rgba(255,255,255,0.45);
-    margin-bottom: 48px;
-    line-height: 1.6;
-  }
-
-  .btn-restart {
-    padding: 16px 48px;
-    background: var(--sf-blue);
-    color: var(--white);
-    font-family: 'Nunito Sans', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    border: none;
-    cursor: pointer;
-    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
-    transition: background 0.2s;
-  }
-  .btn-restart:hover { background: var(--sf-sky); color: var(--black); }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(18px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .hidden { display: none !important; }
-
-  /* PRIZE DRAW MODAL */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-    animation: fadeIn 0.3s ease both;
-  }
-  .modal-overlay.visible { display: flex; }
-
-  .modal-box {
-    background: var(--surface);
-    border: 1px solid var(--sf-blue);
-    border-radius: 2px;
-    padding: 48px 44px;
-    max-width: 480px;
-    width: calc(100% - 48px);
-    text-align: center;
-    position: relative;
-    animation: fadeUp 0.4s ease both;
-    overflow-y: auto;
-    max-height: 90vh;
-  }
-  .modal-box::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--sf-blue), var(--sf-sky));
-  }
-
-  .modal-trophy { font-size: 52px; margin-bottom: 16px; display: block; }
-
-  .modal-title {
-    font-family: 'Nunito Sans', sans-serif;
-    font-size: clamp(22px, 4vw, 32px);
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: -0.01em;
-    color: var(--white);
-    margin-bottom: 12px;
-    line-height: 1.15;
-  }
-  .modal-title span { color: var(--sf-sky); }
-
-  .modal-body {
-    font-size: 15px;
-    font-weight: 400;
-    color: rgba(255,255,255,0.6);
-    line-height: 1.65;
-    margin-bottom: 32px;
-  }
-  .modal-body strong { color: var(--white); }
-
-  .modal-form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
-
-  .modal-input,
-  .modal-select {
-    width: 100%;
-    padding: 14px 18px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    color: var(--white);
-    font-family: 'Nunito', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .modal-input::placeholder { color: rgba(255,255,255,0.25); }
-  .modal-input:focus, .modal-select:focus { border-color: var(--sf-blue); }
-
-  .modal-select {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='rgba(255,255,255,0.4)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 16px center;
-    padding-right: 44px;
-  }
-  .modal-select option { background: var(--surface2); color: var(--white); }
-  .modal-select.placeholder { color: rgba(255,255,255,0.25); }
-
-  .btn-enter {
-    width: 100%;
-    padding: 16px;
-    background: var(--sf-blue);
-    color: var(--white);
-    font-family: 'Nunito Sans', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    border: none;
-    cursor: pointer;
-    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
-    transition: background 0.2s;
-  }
-  .btn-enter:hover { background: var(--sf-sky); color: var(--black); }
-
-  .modal-skip {
-    font-size: 12px;
-    color: rgba(255,255,255,0.3);
-    cursor: pointer;
-    background: none;
-    border: none;
-    font-family: 'Nunito', sans-serif;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    transition: color 0.2s;
-  }
-  .modal-skip:hover { color: rgba(255,255,255,0.6); }
-
-  .modal-success { display: none; animation: fadeUp 0.4s ease both; }
-  .modal-success.visible { display: block; }
-  .modal-success-icon { font-size: 44px; margin-bottom: 12px; display: block; }
-  .modal-success-text { font-family: 'Nunito Sans', sans-serif; font-size: 20px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
-  .modal-success-sub { font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.6; }
-
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-  .consent-wrap {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 24px;
-    text-align: left;
-  }
-
-  .consent-checkbox {
-    appearance: none;
-    -webkit-appearance: none;
-    min-width: 18px;
-    height: 18px;
-    margin-top: 2px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-    position: relative;
-    flex-shrink: 0;
-  }
-  .consent-checkbox:checked { background: var(--sf-blue); border-color: var(--sf-blue); }
-  .consent-checkbox:checked::after {
-    content: '';
-    position: absolute;
-    left: 4px; top: 1px;
-    width: 6px; height: 10px;
-    border: 2px solid #fff;
-    border-top: none; border-left: none;
-    transform: rotate(45deg);
-  }
-  .consent-checkbox.error { border-color: var(--wrong); }
-
-  .consent-label {
-    font-size: 11px;
-    color: rgba(255,255,255,0.45);
-    line-height: 1.6;
-    cursor: pointer;
-  }
-  .consent-label a { color: var(--sf-sky); text-decoration: underline; text-underline-offset: 2px; }
-
-  .consent-error { display: none; font-size: 11px; color: var(--wrong); margin-top: -16px; margin-bottom: 16px; text-align: left; }
-  .consent-error.visible { display: block; }
 </style>
 </head>
 <body>
-<div class="glow-orb"></div>
+<div class="bg-glow" id="glow"></div>
+<div class="app">
 
-<header>
-  <img
-    src="EPAM_SF Partner Badge_Logo_White.png"
-    alt=""
-    onerror="this.style.display='none'"
-  />
-</header>
-
-<div class="container">
-
-  <!-- START SCREEN -->
-  <div id="start-screen" class="title-block">
-    <div class="eyebrow">LEGO Competition</div>
-    <h1>EPAM Salesforce<br/><span>Challenge</span></h1>
-    <p>Answer our question correctly for your chance to win one of <strong style="color:var(--white)">2 luxury LEGO kits</strong>! Get it right and you'll be entered into the prize draw.</p>
-    <button class="btn-primary" onclick="startQuiz()">
-      Take the Challenge
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-  </div>
-
-  <!-- QUIZ SCREEN -->
-  <div id="quiz-screen" class="hidden">
-    <div class="question-card">
-      <span class="question-type-badge">Multiple Choice</span>
-      <div class="question-text" id="question-text"></div>
+  <header>
+    <div class="brand">
+      <span class="logo">EPAM</span>
+      <span class="eyebrow">Salesforce Agentic Acceleration</span>
     </div>
-    <div class="options-grid" id="options-grid"></div>
-    <div class="answer-feedback" id="answer-feedback"></div>
-    <button class="btn-next hidden" id="btn-next" onclick="showResults()">
-      See Result
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <nav class="stepper" id="stepper" aria-label="Stages"></nav>
+    <div class="apx" id="apx"></div>
+  </header>
+  <div class="progress"><i id="bar"></i></div>
+
+  <main class="stage-wrap" id="wrap"></main>
+
+  <footer>
+    <button class="btn" id="back" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
     </button>
-  </div>
-
-  <!-- RESULTS SCREEN -->
-  <div id="results-screen" class="hidden results-screen">
-    <span class="result-icon" id="result-icon">🏆</span>
-    <div class="results-title" id="results-title">Correct!</div>
-    <div class="results-subtitle" id="results-subtitle"></div>
-    <button class="btn-restart" onclick="restartQuiz()">Try Again</button>
-  </div>
-
+    <div class="dots" id="dots"></div>
+    <span class="hint" id="hint">Use ← → arrow keys</span>
+    <button class="btn primary" id="next" type="button">
+      Next
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </footer>
 </div>
 
 <script>
-const question = {
-  question: "How many Salesforce certified experts does EPAM have?",
-  options: ["3", "300", "Over 3,000"],
-  answer: 2,
-  explanation: "EPAM has over 3,000 Salesforce certified experts globally — making us one of the largest Salesforce partners in the world. That depth of expertise means we can tackle projects of any scale, from quick implementations to complex enterprise transformations."
+/* ---------- icons ---------- */
+const I = {
+  layers:'<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+  share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  trend:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+  refresh:'<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/>',
+  deploy:'<polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.4 18.4A5 5 0 0 0 18 9h-1.3A8 8 0 1 0 3 16.3"/>',
+  spark:'<path d="M12 2v6M12 16v6M2 12h6M16 12h6M5 5l4 4M15 15l4 4M19 5l-4 4M9 15l-4 4"/>',
+  book:'<path d="M12 7a5 5 0 0 0-5-4H3v14h5a4 4 0 0 1 4 3 4 4 0 0 1 4-3h5V3h-4a5 5 0 0 0-5 4z"/><line x1="12" y1="7" x2="12" y2="20"/>',
+  grid:'<rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/>',
+  coins:'<ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v13c0 1.7 3.6 3 8 3s8-1.3 8-3v-13"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
+  chev:'<polyline points="6 9 12 15 18 9"/>'
+};
+const svg = (p,w=22)=>`<svg width="${w}" height="${w}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+
+/* ---------- framework phases (the three big circles + road) ---------- */
+const phases = [
+  { id:'INVESTIGATE', label:'Investigate', color:'#8453D2', outcome:'Validated tech foundation & AI shortlist', outLines:['Validated tech foundation','& AI shortlist'] },
+  { id:'ENVISION',    label:'Envision',    color:'#0047FF', outcome:'ROI-prioritised & compliant AI use cases', outLines:['ROI-prioritised &','compliant AI use cases'] },
+  { id:'FRAME',       label:'Frame',       color:'#0E9488', outcome:'A proven agent & AI roadmap', outLines:['A proven agent','& AI roadmap'] },
+  { id:'ROAD',        label:'Road to Production', color:'#5BA845', outcome:'Live agents, improving continuously', outLines:['Live agents,','improving continuously'] }
+];
+const phaseColor = id => (phases.find(p=>p.id===id)||{}).color || '#001965';
+
+/* ---------- stage data (Phase 0 + six stages, grouped by framework phase) ---------- */
+const stages = [
+  { n:0, label:'Phase 0', phase:'INVESTIGATE', key:'Plan', title:'Project Planning & Licensing', color:'#8453D2', icon:I.book,
+    kick:'Set the foundation before a single use case is chosen — the AI you are <strong>approved</strong> to use, and where agents are <strong>allowed to act</strong>.',
+    points:[
+      {t:'Platforms & products — the approved AI tech stack', d:'Confirm the current approved AI tech stack: Agentforce edition, licences and connected models (Atlas Reasoning Engine, Models API / BYO-LLM) and Data Cloud entitlements — the tech foundation everything else builds on.', hot:true},
+      {t:'Agent exposure model', d:'Decide who each agent serves — internal employees vs external customers — and its autonomy: fully autonomous vs assisted / augmented. Exposure sets the risk and design bar.'}
+    ],
+    outcome:'A validated tech foundation: an approved AI stack and a clear map of agent audiences and autonomy levels.'},
+  { n:1, label:'Stage 1', phase:'INVESTIGATE', key:'Identify', title:'Use-Case Identification & Validation', color:'#6B40C8', icon:I.layers,
+    kick:'Ground scope in <strong>lived experience</strong>, not stakeholder assumptions — map how the work actually gets done, then shortlist where an agent earns its place.',
+    points:[
+      {t:'Map lived vs. documented processes', d:'Capture the real workflow people follow — supplemented by the EPAM AI Readiness Scan — not the official one written down.', hot:true},
+      {t:'Identify high-effort, taxing activities', d:'Pinpoint the high-effort, friction-heavy activities that drain focus — the strongest agent candidates.'},
+      {t:'Shortlist & validate AI candidates', d:'Cluster the jobs to be done and validate a shortlist of agentic use cases worth pursuing.'}
+    ],
+    outcome:'A validated, evidence-based shortlist of agentic use cases, grounded in real friction points.'},
+  { n:2, label:'Stage 2', phase:'ENVISION', key:'Map', title:'Agentic Job Mapping', color:'#0047FF', icon:I.share,
+    kick:'Turn each use-case cluster into a concrete map of <strong>agents</strong> and what they need to run in Salesforce.',
+    points:[
+      {t:'Define an agent per cluster', d:'Give each agent a clear purpose, topics and the actions it owns in Agent Builder.'},
+      {t:'Map systems & data', d:'Document what each agent connects to — Data Cloud, CRM and external systems via MuleSoft — and expose the silos in the way.'},
+      {t:'Separate delegate vs. supervise', d:'Decide what an agent runs autonomously and where a human stays in the loop.'}
+    ],
+    outcome:'A defined set of agents — each with its topics, systems, data and human-oversight boundaries.'},
+  { n:3, label:'Stage 3', phase:'ENVISION', key:'Govern', title:'Governance & Compliance', color:'#0078C2', icon:I.shield,
+    kick:'Make agents safe and compliant <strong>by design</strong> — governance built in, not bolted on at the end.',
+    points:[
+      {t:'Define guardrails', d:'Set the operational and behavioural limits on what each agent is allowed to do — topics, instructions and scope.'},
+      {t:'AI regulation assessment', d:'Classify risk under applicable AI regulations — EU AI Act, US Executive Order on AI, UK DSIT guidance — and address auditability, human-in-the-loop (HITL) and deployer obligations globally.'},
+      {t:'Data privacy regulations', d:'Apply applicable data protection law as a design constraint — GDPR (EU/UK), CCPA (California/US), PIPEDA (Canada) — wherever the agent processes personal data.'},
+      {t:'Configure PII masking & toxicity filters', d:'Turn on the Einstein Trust Layer — data masking, toxicity detection and zero data-retention.'},
+      {t:'Apply RBAC & agent permissions', d:'Scope every agent to least-privilege permission sets, profiles and connected-app permissions.'},
+      {t:'Data sovereignty & audit logging', d:'Establish where data resides and capture an immutable audit trail of every agent action.'}
+    ],
+    outcome:'Guardrails, a compliance assessment and Trust-Layer controls that clear the agent design for build.'},
+  { n:4, label:'Stage 4', phase:'ENVISION', key:'Case', title:'Business Case', color:'#4A71BD', icon:I.trend,
+    kick:'Prove the economics — and fund the use cases that <strong>pay for themselves</strong> first.',
+    points:[
+      {t:'Baseline the unit task cost', d:'Establish what each task costs to do today as the human benchmark.'},
+      {t:'Model token / consumption economics', d:'Estimate Agentforce consumption (Flex Credits, actions) across context-engineering and reasoning scenarios.'},
+      {t:'Model ROI per use case', d:'Project the financial impact of each agent or agentic use case.'},
+      {t:'Prioritise self-sustaining ROI', d:'Validate the use cases that fund themselves before anything else.'},
+      {t:'Initial roadmap', d:'Sequence the prioritised use cases into a first delivery roadmap.'}
+    ],
+    outcome:'A ranked shortlist of ROI-prioritised, compliant use cases with an initial roadmap.'},
+  { n:5, label:'Stage 5', phase:'FRAME', key:'Calibrate', title:'Value Benchmarking & Calibration', color:'#0E9488', icon:I.refresh,
+    kick:'Iterate in a tight loop until the agent is <strong>reliable</strong> and the business outcome is <strong>real</strong>.',
+    points:[
+      {t:'Prototype the agent', d:'Stand up a PoC on synthetic data and simulated integrations, then test accuracy, precision, guardrails, agent standard deviation and real consumption cost.'},
+      {t:'Embed into the workflow & prove value', d:'Validate operational reliability and ROI in the real workflow — using Agentforce Testing Center and Agentforce Observability.'},
+      {t:'Adjust & repeat', d:'Accuracy below target → fix prompt, data or model. Cost over budget → optimise. Priorities shifted → reorder. Else → ship.'},
+      {t:'Refine the roadmap', d:'Update the roadmap and business case based on the PoC results.'}
+    ],
+    outcome:'An agent proven reliable and cost-effective — cleared to ship to production.'},
+  { n:6, label:'Stage 6', phase:'ROAD', key:'Deploy', title:'Deploy & Optimise', color:'#5BA845', icon:I.deploy,
+    kick:'Ship into the real workflow — the road to production — and keep <strong>compounding</strong> the value.',
+    points:[
+      {t:'Build with real integrations', d:'Connect agents to live Data Cloud, CRM, systems and interfaces.'},
+      {t:'High-volume testing & optimisation', d:'Harden the agent under realistic load.'},
+      {t:'Measure ROI & improve continuously', d:'Track value with Agentforce Observability and keep improving in continuous-improvement mode.'}
+    ],
+    outcome:'Live agents in the workflow — measured and improving continuously.'}
+];
+
+/* ---------- the framework diagram: principle waves → three phase circles → road ---------- */
+function heroFrameworkSVG(){
+  const cx=[470,635,800,965], cy=132, r=64;
+  const waves=[
+    ['M150,58 C214,40 252,150 300,116 S362,118 402,132','#8453D2'],
+    ['M150,108 C214,142 252,58 300,150 S362,128 402,132','#6B40C8'],
+    ['M150,158 C214,120 252,198 300,116 S362,140 402,132','#2660E8'],
+    ['M150,208 C214,190 252,120 300,158 S362,150 402,132','#0047FF']
+  ];
+  const wpaths = waves.map(([d,c],i)=>`<path class="fw-wave" d="${d}" stroke="${c}" style="animation-delay:${(0.2+i*0.12).toFixed(2)}s"/>`).join('');
+  const prin=[['Business-driven',58],['Human-centered',108],['ROI-informed',158],['AI-accelerated',208]];
+  const plabels = prin.map(([t,y])=>`<text class="fw-prin" x="146" y="${y+3}" text-anchor="end">${t}</text>`).join('');
+  const circles = phases.map((p,i)=>`
+    <g class="fw-circ" style="animation-delay:${(0.75+i*0.22).toFixed(2)}s">
+      <circle cx="${cx[i]}" cy="${cy}" r="${r}" fill="#fff" stroke="${p.color}" stroke-width="6"/>
+      ${p.id==='ROAD'
+        ? `<text class="fw-ctitle" x="${cx[i]}" y="${cy-8}" text-anchor="middle" fill="${p.color}">ROAD TO</text>
+           <text class="fw-ctitle" x="${cx[i]}" y="${cy+12}" text-anchor="middle" fill="${p.color}">PRODUCTION</text>`
+        : `<text class="fw-ctitle" x="${cx[i]}" y="${cy+5}" text-anchor="middle" fill="${p.color}">${p.id}</text>`}
+      <text class="fw-cout" x="${cx[i]}" y="${cy+r+15}" text-anchor="middle">${p.outLines[0]}</text>
+      <text class="fw-cout" x="${cx[i]}" y="${cy+r+27}" text-anchor="middle">${p.outLines[1]}</text>
+    </g>`).join('');
+  // continuous band (arrow) running beneath all four phases
+  const bandY=242, bandH=46, bx0=404, bx1=1010, tip=1048;
+  const band=`
+    <g class="fw-band">
+      <path d="M${bx0},${bandY} H${bx1} L${tip},${bandY+bandH/2} L${bx1},${bandY+bandH} H${bx0} Z" fill="url(#fwBand)"/>
+      <text x="${(bx0+bx1)/2}" y="${bandY+18}" text-anchor="middle" fill="#fff" font-size="10.5" font-weight="800" letter-spacing=".04em">Stakeholder &amp; Change Management</text>
+      <text x="${(bx0+bx1)/2}" y="${bandY+32}" text-anchor="middle" fill="rgba(255,255,255,.92)" font-size="10" font-weight="700">Observability &amp; Monitoring · Engagement Governance &amp; Compliance</text>
+    </g>`;
+  return `
+  <div class="fw">
+    <svg viewBox="0 0 1120 300" role="img" aria-label="Salesforce Agentic Acceleration Framework: four guiding principles flowing into Investigate, Envision, Frame and Road to Production, over a continuous band of change management, observability and governance">
+      <defs>
+        <linearGradient id="fwBand" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#8453D2"/><stop offset="0.5" stop-color="#0047FF"/><stop offset="0.75" stop-color="#0E9488"/><stop offset="1" stop-color="#5BA845"/>
+        </linearGradient>
+      </defs>
+      ${plabels}
+      ${wpaths}
+      <line class="fw-bundle" x1="402" y1="132" x2="${cx[0]-r}" y2="132"/>
+      ${circles}
+      ${band}
+    </svg>
+  </div>`;
+}
+
+/* ---------- build overview ---------- */
+function overviewHTML(){
+  const last = stages.length-1;
+  const journey = stages.map((s,i)=>{
+    const next = i<last ? stages[i+1].color : s.color;
+    const ph = (phases.find(p=>p.id===s.phase)||{}).label||'';
+    return `<button class="jstep" style="--n-color:${s.color};--next-color:${next};animation-delay:${(0.12+i*0.07).toFixed(2)}s" data-go="${i+1}">
+        <span class="jnode">${s.n}</span>
+        <span class="jbody">
+          <span class="jhd"><span class="jic">${svg(s.icon,17)}</span>${s.label} · ${s.title}<span class="jphase" style="--pc:${phaseColor(s.phase)}">${ph}</span></span>
+          <span class="jdesc">${stripStrong(s.kick)}</span>
+        </span>
+      </button>`;
+  }).join('');
+  const chips = ['Business-driven','Human-centered','ROI-informed','AI-accelerated']
+    .map(c=>`<span class="pchip">${c}</span>`).join('');
+  return `<section class="screen cover" data-i="0"><div class="inner hero">
+    <div class="hero-intro" style="text-align:center;max-width:900px;margin:0 auto">
+      <div class="kicker">EPAM's Salesforce Agentic Acceleration Framework</div>
+      <h1>Start at the correct stage of the <span>AI lifecycle</span></h1>
+      <div class="pchips">${chips}</div>
+    </div>
+    ${heroFrameworkSVG()}
+    <nav class="journey journey-grid" aria-label="Phase 0 and the six stages, in sequence">${journey}</nav>
+  </div></section>`;
+}
+const stripStrong = h => h.replace(/<[^>]+>/g,'');
+
+/* ---------- build a normal stage ---------- */
+function stageHTML(s,idx){
+  const steps = s.points.map((p,k)=>`
+    <div class="stp${p.hot?' hot':''}">
+      <div class="mk">${k+1}</div>
+      <div class="bd"><h4>${p.t}${p.hot?'<span class="tag">START HERE</span>':''}</h4><p>${p.d}</p></div>
+    </div>`).join('');
+  const fin = `
+    <div class="stp fin">
+      <div class="mk">${svg('<polyline points="20 6 9 17 4 12"/>',24)}</div>
+      <div class="bd"><span class="lead">${s.label} complete</span><h4>${s.outcome}</h4></div>
+    </div>`;
+  return `<section class="screen" data-i="${idx}" style="--accent:${s.color}">
+    <div class="inner">
+      <div class="stage-head">
+        <div class="stage-num">${s.n}${svg(s.icon,20)}</div>
+        <div class="meta"><div class="of">${(phases.find(p=>p.id===s.phase)||{}).label||''} · ${s.label} · ${s.points.length} steps</div><h2>${s.title}</h2></div>
+      </div>
+      <p class="kick">${s.kick}</p>
+      <div class="stage-body">
+        ${diagramHTML(s)}
+        <div class="steps">${steps}${fin}</div>
+      </div>
+      ${(()=>{ const e=Object.entries(drilldowns).find(([,d])=>d.stage===s.n); if(!e) return '';
+        const [id,d]=e; return `<button class="deeper-cta" data-open-drill="${id}">
+        <span class="dc-tx">
+          <span class="dc-t">${d.cta.t}</span>
+          <span class="dc-s">${d.cta.s}</span>
+        </span>
+        <span class="dc-go">${d.cta.go} ${svg('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',16)}</span>
+      </button>`; })()}
+    </div>
+  </section>`;
+}
+
+/* ---------- build stage 5 (loop) ---------- */
+/* Stage 5 - the calibration loop + eval-journey convergence chart */
+function dgm5(){
+  const xs  = [60,120,180,240,300,360,420];
+  // realistic first-pass mock starts ~55% accuracy / ~44% precision; iter 4 regression (an over-correction), strong rebound iter 5+, both clear 95% target by iter 7
+  const acc = [80,67,54,60,47,39,33];   // accuracy y coords  (55,66,78,73,85,92,97 %)
+  const prc = [92,80,66,74,54,43,36];   // precision y coords (44,55,67,60,78,88,95 %)
+  const pts = ys => xs.map((x,i)=>`${x},${ys[i]}`).join(' ');
+  const xLabels = xs.map((x,i)=>`<text class="axt" x="${x}" y="156" text-anchor="middle">${i+1}</text>`).join('');
+  const dots = (ys,fill) => xs.map((x,i)=>
+    `<circle class="evdot evd${i+1}" cx="${x}" cy="${ys[i]}" r="3.6" fill="${fill}"/>`).join('');
+
+  return `
+<div class="diagram">
+  <div class="dgm-title">The calibration loop</div>
+  <div class="loop">
+    <svg viewBox="-52 4 344 280" aria-label="Calibration loop: Roadmap, Mock Agent, Prove Value - repeating until targets are met">
+      <defs>
+        <filter id="hubShadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#10122B" flood-opacity="0.26"/>
+        </filter>
+      </defs>
+
+      <!-- outer cycle: visible track + travelling comet shows the loop never stops -->
+      <circle class="cyc-track" cx="120" cy="120" r="106"/>
+      <path class="cyc-run" d="M108.92 14.58 A106 106 0 0 1 225.42 108.92"/>
+      <polygon class="cyc-head" points="226.15,115.88 220.13,106.46 230.08,105.41"/>
+
+      <!-- the three calibration arcs -->
+      <path class="seg segA" pathLength="100" stroke="var(--roadmap)" d="M45.16,158.13 A84,84 0 0 1 115.61,36.12"/>
+      <path class="seg segB" pathLength="100" stroke="var(--mock)"    d="M124.39,36.12 A84,84 0 0 1 194.85,158.13"/>
+      <path class="seg segC" pathLength="100" stroke="var(--prove)"   d="M190.45,165.75 A84,84 0 0 1 49.55,165.75"/>
+
+      <!-- hub: centred ADJUST + sub-text -->
+      <circle class="hub-plate" cx="120" cy="120" r="54"/>
+      <text class="hub-title" x="120" y="110" text-anchor="middle">ADJUST</text>
+      <text class="hub-sub" x="120" y="124" text-anchor="middle">repeat until</text>
+      <text class="hub-sub" x="120" y="137" text-anchor="middle">targets met</text>
+
+      <!-- labels, outside the ring and clear of the cycle track, coloured to their segment -->
+      <g class="slbl slblA">
+        <circle class="disc" cx="12.61" cy="58" r="10" fill="var(--roadmap)"/>
+        <text class="idx" x="12.61" y="62" text-anchor="middle">1</text>
+        <text class="word" x="-6.44" y="47" text-anchor="middle" fill="#6A4FCB">ROADMAP</text>
+      </g>
+      <g class="slbl slblB">
+        <circle class="disc" cx="227.39" cy="58" r="10" fill="var(--mock)"/>
+        <text class="idx" x="227.39" y="62" text-anchor="middle">2</text>
+        <text class="word" x="246.44" y="47" text-anchor="middle" fill="#2550C4">MOCK AGENT</text>
+      </g>
+      <g class="slbl slblC">
+        <circle class="disc" cx="120" cy="244" r="10" fill="var(--prove)"/>
+        <text class="idx" x="120" y="248" text-anchor="middle">3</text>
+        <text class="word" x="120" y="266" text-anchor="middle" fill="#0B857C">PROVE VALUE</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="evals">
+    <div class="evals-head">
+      <span class="evals-sub">Eval journey · each lap raises the score</span>
+      <span class="evals-legend">
+        <span><i class="acc"></i>Accuracy</span>
+        <span><i class="prc"></i>Precision</span>
+      </span>
+    </div>
+    <svg class="dgm" viewBox="0 0 460 180" role="img" aria-label="Accuracy and precision climbing toward target across seven eval iterations">
+      <!-- target threshold -->
+      <line class="target" x1="60" y1="35" x2="420" y2="35"/>
+      <text class="tgt-lab" x="416" y="29" text-anchor="end">TARGET 95%</text>
+      <!-- axes -->
+      <line class="axis" x1="60" y1="20" x2="60" y2="140"/>
+      <line class="axis" x1="60" y1="140" x2="420" y2="140"/>
+      <!-- iteration ticks -->
+      ${xLabels}
+      <text class="axt" x="240" y="172" text-anchor="middle">Eval iteration →</text>
+      <text class="axt" x="44" y="80" text-anchor="middle" transform="rotate(-90 44 80)">Score %</text>
+      <!-- climbing lines grow segment-by-segment as each comet lap completes -->
+      <polyline class="line evline" stroke="var(--accent)" points="${pts(acc)}" pathLength="100"/>
+      <polyline class="line evline" stroke="var(--mock)"   points="${pts(prc)}" pathLength="100"/>
+      <!-- iteration data points: dot N pops in at the end of comet lap N -->
+      ${dots(acc,'var(--accent)')}
+      ${dots(prc,'var(--mock)')}
+    </svg>
+  </div>
+
+  <div class="dgm-cap">Mock → prove → adjust, in a tight loop. Each eval pass drives <b>accuracy</b> and <b>precision</b> toward the threshold — when both lines clear target, the agent ships.</div>
+</div>`;}
+
+/* ---------- closing: the compounding staircase ---------- */
+function closeHTML(idx){
+  const N=stages.length, baseY=286, x0=70, stepW=104, gap=12;
+  const topHi=44, topLo=244, span=(topLo-topHi)/(N-1);
+  const outs=['Approved stack','Use cases found','Agents designed','Made compliant','ROI proven','Value calibrated','Live & improving'];
+  let steps='', linePts=[];
+  stages.forEach((s,k)=>{
+    const x=x0+k*(stepW+gap), cx=x+stepW/2, ty=topLo-k*span, h=baseY-ty;
+    linePts.push(`${cx.toFixed(1)},${(ty-6).toFixed(1)}`);
+    steps += `
+      <g class="stair-step" style="animation-delay:${(0.15+k*0.11).toFixed(2)}s">
+        <rect class="step-bar" x="${x}" y="${ty.toFixed(1)}" width="${stepW}" height="${h.toFixed(1)}" rx="9" fill="${s.color}"/>
+        <circle cx="${cx}" cy="${(ty+22).toFixed(1)}" r="14" fill="#fff"/>
+        <text class="step-num" x="${cx}" y="${(ty+27).toFixed(1)}" text-anchor="middle" fill="${s.color}">${s.n}</text>
+        <text class="step-key" x="${cx}" y="${baseY+22}" text-anchor="middle">${s.key}</text>
+        <text class="step-out" x="${cx}" y="${baseY+35}" text-anchor="middle">${outs[k]}</text>
+      </g>`;
+  });
+  const lastCx = x0+(N-1)*(stepW+gap)+stepW/2;
+  const tipEnd = `${(lastCx+34).toFixed(1)},${(topHi-14).toFixed(1)}`;
+  const benefits=[
+    {c:'#8453D2', ic:I.layers,  t:'Evidence-based use-case discovery', d:'Use cases are prioritised from the EPAM Salesforce scan, then grounded in lived vs. documented processes and tacit knowledge — scope sits on real friction, not stakeholder assumptions.'},
+    {c:'#0078C2', ic:I.shield,  t:'Governance embedded at design', d:'AI regulatory risk classification (EU AI Act, US EO, UK DSIT), data privacy (GDPR, CCPA, PIPEDA), RBAC and audit logging are built into the solution design — not bolted on at the end.'},
+    {c:'#0E9488', ic:I.refresh, t:'Prove value before full build', d:'Agents are prototyped on synthetic data, embedded in real workflows and tested for accuracy and cost — iterating until ROI is proven.'},
+    {c:'#5BA845', ic:I.trend,   t:'Dynamic, cost-validated business case', d:'ROI is continuously recalculated from real unit-task costs and consumption economics found during prototyping, so priorities shift on evidence.'}
+  ];
+  const bcards = benefits.map((b,i)=>`
+    <div class="bcard" style="--bc:${b.c};animation-delay:${(1.5+i*0.13).toFixed(2)}s">
+      <span class="bic">${svg(b.ic,17)}</span>
+      <h4>${b.t}</h4>
+      <p>${b.d}</p>
+    </div>`).join('');
+  return `<section class="screen" data-i="${idx}" style="--accent:var(--epam)">
+    <div class="inner close">
+      <div class="close-head">
+        <div class="ic">${svg(I.spark,24)}</div>
+        <div>
+          <h2>Benefits of the approach</h2>
+          <p class="close-lede">Start at the correct stage and each node stacks on the last — from an approved foundation to live, improving agents. <b>Four benefits keep the value compounding</b>, so the gains build rather than reset.</p>
+        </div>
+      </div>
+      <div class="stair">
+        <svg viewBox="0 0 900 338" role="img" aria-label="Staircase of Phase 0 and the six stages rising to live, compounding value">
+          <line class="stair-axis" x1="70" y1="22" x2="70" y2="286"/>
+          <line class="stair-axis" x1="70" y1="286" x2="888" y2="286"/>
+          <text class="stair-ax" x="56" y="150" text-anchor="middle" transform="rotate(-90 56 150)">Value delivered</text>
+          ${steps}
+          <polyline class="stair-line" pathLength="100" points="${linePts.join(' ')} ${tipEnd}"/>
+          <polygon class="stair-tip" points="${(lastCx+42).toFixed(1)},${(topHi-18).toFixed(1)} ${(lastCx+30).toFixed(1)},${(topHi-6).toFixed(1)} ${(lastCx+26).toFixed(1)},${(topHi-21).toFixed(1)}"/>
+          <text class="stair-note" x="${(lastCx-10).toFixed(1)}" y="22" text-anchor="end">value keeps compounding</text>
+        </svg>
+      </div>
+      <div class="benefits">${bcards}</div>
+    </div>
+  </section>`;
+}
+
+/* ---------- signature diagram per stage ---------- */
+function diagramHTML(s){
+  return ({0:dgm0,1:dgm1,2:dgm2,3:dgm3,4:dgm4,5:dgm5,6:dgm6}[s.n] || (()=>''))();
+}
+
+/* Phase 0 - Agent exposure matrix: audience × autonomy */
+function dgm0(){return `
+<div class="diagram">
+  <div class="dgm-title">The agent exposure matrix</div>
+  <svg class="dgm" viewBox="0 0 460 296" role="img" aria-label="Agent exposure: internal versus external audience against autonomous versus assisted operation">
+    <rect x="80" y="16" width="178" height="120" fill="#EEEFF6"/>
+    <rect x="258" y="16" width="178" height="120" class="a-tint"/>
+    <rect x="80" y="136" width="178" height="120" fill="#F4F5FA"/>
+    <rect x="258" y="136" width="178" height="120" class="a-tint2"/>
+    <line class="gl" x1="258" y1="16" x2="258" y2="256"/>
+    <line class="gl" x1="80" y1="136" x2="436" y2="136"/>
+    <rect x="296" y="24" width="128" height="17" rx="8.5" class="a-fill"/>
+    <text x="360" y="36" text-anchor="middle" font-size="9" font-weight="800" fill="#fff" letter-spacing="1">HIGHEST SCRUTINY</text>
+    <text class="ql a-text" x="347" y="74" text-anchor="middle">Autonomous customer agent</text>
+    <text class="qs" x="347" y="90" text-anchor="middle">e.g. self-service resolution</text>
+    <text class="ql" x="169" y="70" text-anchor="middle" fill="#5C627A">Autonomous ops agent</text>
+    <text class="qs" x="169" y="86" text-anchor="middle">e.g. back-office automation</text>
+    <text class="ql" x="347" y="192" text-anchor="middle" fill="#5C627A">Customer-facing assist</text>
+    <text class="qs" x="347" y="208" text-anchor="middle">e.g. guided self-service</text>
+    <text class="ql" x="169" y="192" text-anchor="middle" fill="#5C627A">Employee copilot</text>
+    <text class="qs" x="169" y="208" text-anchor="middle">e.g. internal knowledge assist</text>
+    <line class="axis" x1="80" y1="16" x2="80" y2="256"/>
+    <line class="axis" x1="80" y1="256" x2="436" y2="256"/>
+    <path d="M80,12 l-4,9 h8 z" fill="#8990A6"/>
+    <path d="M440,256 l-9,-4 v8 z" fill="#8990A6"/>
+    <text class="axt" x="70" y="80" text-anchor="middle" transform="rotate(-90 70 80)">Autonomous</text>
+    <text class="axt" x="70" y="200" text-anchor="middle" transform="rotate(-90 70 200)">Assisted</text>
+    <text class="axt" x="169" y="276" text-anchor="middle">Internal employees</text>
+    <text class="axt" x="347" y="276" text-anchor="middle">External customers</text>
+  </svg>
+  <div class="dgm-cap">Fix <b>exposure</b> before build. Audience (internal vs external) and autonomy (autonomous vs assisted) set the guardrails, licensing and review depth — the <b>top right quadrant</b> carries the heaviest oversight.</div>
+</div>`;}
+
+/* Stage 1 - Cognitive load × delegation suitability matrix */
+function dgm1(){return `
+<div class="diagram">
+  <div class="dgm-title">The agent suitability matrix</div>
+  <svg class="dgm" viewBox="0 0 460 296" role="img" aria-label="Cognitive load versus delegation suitability">
+    <rect x="80" y="16" width="178" height="120" fill="#EEEFF6"/>
+    <rect x="258" y="16" width="178" height="120" class="a-tint"/>
+    <rect x="80" y="136" width="178" height="120" fill="#F4F5FA"/>
+    <rect x="258" y="136" width="178" height="120" class="a-tint2"/>
+    <line class="gl" x1="258" y1="16" x2="258" y2="256"/>
+    <line class="gl" x1="80" y1="136" x2="436" y2="136"/>
+    <rect x="296" y="24" width="92" height="17" rx="8.5" class="a-fill"/>
+    <text x="342" y="36" text-anchor="middle" font-size="9" font-weight="800" fill="#fff" letter-spacing="1">SWEET SPOT</text>
+    <text class="ql a-text" x="347" y="74" text-anchor="middle">Agentic workflow</text>
+    <text class="qs" x="347" y="90" text-anchor="middle">e.g. customer-service triage</text>
+    <text class="ql" x="169" y="70" text-anchor="middle" fill="#5C627A">Human-led + agent</text>
+    <text class="qs" x="169" y="86" text-anchor="middle">e.g. decision support</text>
+    <text class="ql" x="347" y="192" text-anchor="middle" fill="#5C627A">Traditional automation</text>
+    <text class="qs" x="347" y="208" text-anchor="middle">e.g. invoice processing · RPA</text>
+    <text class="ql" x="169" y="192" text-anchor="middle" fill="#5C627A">Leave as-is</text>
+    <text class="qs" x="169" y="208" text-anchor="middle">low volume · low value</text>
+    <line class="axis" x1="80" y1="16" x2="80" y2="256"/>
+    <line class="axis" x1="80" y1="256" x2="436" y2="256"/>
+    <path d="M80,12 l-4,9 h8 z" fill="#8990A6"/>
+    <path d="M440,256 l-9,-4 v8 z" fill="#8990A6"/>
+    <text class="axt" x="258" y="282" text-anchor="middle">Delegation suitability →</text>
+    <text class="axt" x="62" y="136" text-anchor="middle" transform="rotate(-90 62 136)">Cognitive load →</text>
+  </svg>
+  <div class="dgm-cap">Safe delegation lives <b>top-right</b>: high cognitive load met by structured data, deterministic rules and risk controls. Map every workflow here before building anything - and don't build an agent where simple automation already wins.</div>
+</div>`;}
+
+/* Stage 2 - Agent map: clusters → agents → shared systems */
+function dgm2(){
+  const node=(x,y,w,h,cls,inner)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="9" class="${cls}"/>${inner}`;
+  return `
+<div class="diagram">
+  <div class="dgm-title">Agent map · shared by design</div>
+  <svg class="dgm" viewBox="0 0 460 300" role="img" aria-label="Agents mapped to clusters and shared systems">
+    <text class="axt" x="70" y="13" text-anchor="middle">Job clusters</text>
+    <text class="axt" x="232" y="13" text-anchor="middle">Agents</text>
+    <text class="axt" x="396" y="13" text-anchor="middle">Shared systems</text>
+    <!-- cluster -> agent links -->
+    <line x1="112" y1="60" x2="176" y2="60" stroke="#C7CCDB" stroke-width="1.5"/>
+    <line x1="112" y1="140" x2="176" y2="140" stroke="#C7CCDB" stroke-width="1.5"/>
+    <line x1="112" y1="220" x2="176" y2="220" stroke="#C7CCDB" stroke-width="1.5"/>
+    <!-- agent -> system links (shared, accent) -->
+    <g class="a-line" stroke-width="1.7" stroke-opacity=".5">
+      <line x1="288" y1="60" x2="350" y2="60"/>
+      <line x1="288" y1="60" x2="350" y2="140"/>
+      <line x1="288" y1="140" x2="350" y2="60"/>
+      <line x1="288" y1="140" x2="350" y2="220"/>
+      <line x1="288" y1="220" x2="350" y2="140"/>
+      <line x1="288" y1="220" x2="350" y2="220"/>
+    </g>
+    <!-- clusters -->
+    ${node(28,44,84,32,'',`<rect x="28" y="44" width="84" height="32" rx="9" fill="#F4F5FA" stroke="#E0E3EE"/><text class="nl" x="70" y="64" text-anchor="middle">Triage</text>`)}
+    ${node(28,118,84,44,'',`<rect x="28" y="118" width="84" height="44" rx="9" fill="#F4F5FA" stroke="#E0E3EE"/><text class="nl" x="70" y="136" text-anchor="middle" font-size="10">Authentication</text><text class="nl" x="70" y="151" text-anchor="middle" font-size="10">&amp; data</text>`)}
+    ${node(28,204,84,32,'',`<rect x="28" y="204" width="84" height="32" rx="9" fill="#F4F5FA" stroke="#E0E3EE"/><text class="nl" x="70" y="224" text-anchor="middle">Resolve</text>`)}
+    <!-- agents -->
+    <g>
+      <rect x="176" y="38" width="112" height="44" rx="10" fill="#fff" class="a-stroke" stroke-width="2"/>
+      <text class="nl" x="232" y="58" text-anchor="middle">Concierge</text>
+      <text class="nsub" x="232" y="72" text-anchor="middle" fill="#C2772A">SUPERVISE</text>
+      <rect x="176" y="118" width="112" height="44" rx="10" fill="#fff" class="a-stroke" stroke-width="2"/>
+      <text class="nl" x="232" y="138" text-anchor="middle">Lookup</text>
+      <text class="nsub a-text" x="232" y="152" text-anchor="middle">DELEGATE</text>
+      <rect x="176" y="198" width="112" height="44" rx="10" fill="#fff" class="a-stroke" stroke-width="2"/>
+      <text class="nl" x="232" y="218" text-anchor="middle">Resolution</text>
+      <text class="nsub" x="232" y="232" text-anchor="middle" fill="#C2772A">SUPERVISE</text>
+    </g>
+    <!-- systems (all reused) -->
+    <g>
+      <rect x="350" y="45" width="92" height="30" rx="9" fill="#fff" class="a-stroke" stroke-width="1.6"/>
+      <text class="nl" x="396" y="64" text-anchor="middle">CRM</text>
+      <rect x="350" y="125" width="92" height="30" rx="9" fill="#fff" class="a-stroke" stroke-width="1.6"/>
+      <text class="nl" x="396" y="144" text-anchor="middle">Knowledge base</text>
+      <rect x="350" y="205" width="92" height="30" rx="9" fill="#fff" class="a-stroke" stroke-width="1.6"/>
+      <text class="nl" x="396" y="224" text-anchor="middle">Transcripts</text>
+    </g>
+  </svg>
+  <div class="dgm-cap">One agent per cluster, each set to <b>delegate</b> or <b>supervise</b>. Agents reuse the same integrations - so every new agent compounds the value of the ones already built.</div>
+</div>`;}
+
+/* Stage 3 - EU AI Act risk pyramid + principles */
+function dgm3(){
+  const chips=['Transparency','Human oversight','Data quality &amp; privacy','Accuracy &amp; robustness','Safety &amp; security','Accountability']
+    .map(c=>`<span><i></i>${c}</span>`).join('');
+  return `
+<div class="diagram">
+  <div class="dgm-title">AI regulatory risk · global tiers</div>
+  <svg class="dgm" viewBox="0 0 460 272" role="img" aria-label="AI regulatory risk pyramid: prohibited at the narrow top apex, minimal risk at the wide base">
+    <text x="45" y="33" text-anchor="middle" font-size="8" font-weight="700" fill="#A7ADBF">few</text>
+    <line x1="45" y1="41" x2="45" y2="233" stroke="#C7CCDB" stroke-width="1.3"/>
+    <path d="M45,239 l-4,-8 h8 z" fill="#C7CCDB"/>
+    <text x="45" y="251" text-anchor="middle" font-size="8" font-weight="700" fill="#A7ADBF">many</text>
+    <text x="29" y="138" text-anchor="middle" font-size="8.5" font-weight="700" fill="#A7ADBF" transform="rotate(-90 29 138)">AI systems</text>
+    <polygon points="200,18 233,76 167,76" fill="#E5484D"/>
+    <polygon points="167,79 233,79 267,137 133,137" class="a-fill"/>
+    <polygon points="133,140 267,140 301,198 99,198" fill="#D7DDEA"/>
+    <polygon points="99,201 301,201 335,259 65,259" fill="#EAEDF4"/>
+    <text x="200" y="67" text-anchor="middle" font-size="8.5" font-weight="800" fill="#fff">Prohibited</text>
+    <text x="200" y="113" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">High risk</text>
+    <text x="200" y="174" text-anchor="middle" font-size="11.5" font-weight="700" fill="#41475C">Limited risk</text>
+    <text x="200" y="234" text-anchor="middle" font-size="11.5" font-weight="700" fill="#5C627A">Minimal risk</text>
+    <circle cx="251" cy="108" r="2.4" class="a-fill"/>
+    <line x1="251" y1="108" x2="287" y2="108" class="a-line" stroke-width="1.3"/>
+    <text class="a-text" x="291" y="105" font-size="9.5" font-weight="700">most enterprise</text>
+    <text class="a-text" x="291" y="117" font-size="9.5" font-weight="700">agents land here</text>
+  </svg>
+  <div class="dgm-cap">Major AI regulations (EU AI Act, US EO 14110, UK DSIT) share a risk-tiered approach. Most uses are <b>minimal-risk</b>; only a few are <b>prohibited</b>. Enterprise agents mostly land in the <b>high-risk</b> tier — so we build the six principles in from design:</div>
+  <div class="dgm-chips">${chips}</div>
+</div>`;}
+
+/* Stage 4 - Break-even ROI chart */
+function dgm4(){return `
+<div class="diagram">
+  <div class="dgm-title">The self-financing business case</div>
+  <svg class="dgm" viewBox="0 0 460 290" role="img" aria-label="Break-even chart of manual versus AI cost">
+    <line class="gl" x1="185" y1="40" x2="185" y2="256"/>
+    <line class="gl" x1="311" y1="40" x2="311" y2="256"/>
+    <polygon points="236,166 436,86 436,150" class="a-tint" style="opacity:0;animation:fadein .6s ease 1s forwards"/>
+    <text class="a-text" x="388" y="140" text-anchor="middle" font-size="10" font-weight="700" style="opacity:0;animation:fadein .6s ease 1.1s forwards">cumulative savings</text>
+    <polyline class="line draw" points="60,238 436,86" stroke="#8990A6" pathLength="100"/>
+    <polyline class="line a-line draw" points="60,180 436,150" pathLength="100" style="animation-delay:.35s"/>
+    <line class="gl" x1="236" y1="40" x2="236" y2="256"/>
+    <circle cx="236" cy="166" r="5.5" class="a-fill pop" style="animation-delay:1.1s"/>
+    <text class="a-text" x="236" y="32" text-anchor="middle" font-size="10.5" font-weight="800">Break-even · illustrative</text>
+    <text x="430" y="78" text-anchor="end" font-size="10.5" font-weight="700" fill="#6A7088">Manual (as-is)</text>
+    <text class="a-text" x="430" y="172" text-anchor="end" font-size="10.5" font-weight="700">With AI (to-be)</text>
+    <line class="axis" x1="60" y1="40" x2="60" y2="256"/>
+    <line class="axis" x1="60" y1="256" x2="436" y2="256"/>
+    <text class="axt" x="60" y="270" text-anchor="middle">0</text>
+    <text class="axt" x="185" y="270" text-anchor="middle">12</text>
+    <text class="axt" x="311" y="270" text-anchor="middle">24</text>
+    <text class="axt" x="430" y="270" text-anchor="middle">36 mo</text>
+    <text class="axt" x="50" y="148" text-anchor="middle" transform="rotate(-90 50 148)">Cumulative cost →</text>
+  </svg>
+  <div class="dgm-cap">The <b>shape</b> is the point: costlier upfront, then far cheaper to run — so it pays back and then compounds. <b>When</b> break-even lands depends entirely on the use case; here, illustratively, around 12–18 months.</div>
+</div>`;}
+
+/* Stage 6 - 0→1→Scale compounding waves */
+function dgm6(){
+  const bar=(x,y,h,op,d)=>`<rect class="bar" x="${x}" y="${y}" width="58" height="${h}" rx="6" fill="var(--accent)" fill-opacity="${op}" style="animation-delay:${d}s"/>`;
+  return `
+<div class="diagram">
+  <div class="dgm-title">From 0 → 1 → scaled</div>
+  <svg class="dgm" viewBox="0 0 460 290" role="img" aria-label="Compounding deployment waves">
+    ${bar(78,196,60,.5,.1)}
+    ${bar(168,144,112,.68,.25)}
+    ${bar(258,92,164,.84,.4)}
+    ${bar(348,50,206,1,.55)}
+    <polyline class="line a-line draw" points="107,190 197,138 287,86 377,44" pathLength="100" style="stroke-width:2.4;animation-delay:.7s"/>
+    <path d="M377,44 l13,-6 -2,8 z" class="a-fill"/>
+    <text class="a-text" x="396" y="34" text-anchor="end" font-size="10" font-weight="700">cumulative value</text>
+    <g class="a-fill">
+      <circle cx="107" cy="190" r="4" class="pop" style="animation-delay:.8s"/>
+      <circle cx="197" cy="138" r="4" class="pop" style="animation-delay:.95s"/>
+      <circle cx="287" cy="86" r="4" class="pop" style="animation-delay:1.1s"/>
+      <circle cx="377" cy="44" r="4" class="pop" style="animation-delay:1.25s"/>
+    </g>
+    <line class="axis" x1="56" y1="256" x2="436" y2="256"/>
+    <text class="nl" x="107" y="272" text-anchor="middle">Pilot</text>
+    <text class="qs" x="107" y="284" text-anchor="middle">0 → 1</text>
+    <text class="nl" x="197" y="272" text-anchor="middle">Wave 1</text>
+    <text class="nl" x="287" y="272" text-anchor="middle">Wave 2</text>
+    <text class="nl" x="377" y="272" text-anchor="middle">Scale</text>
+    <text class="axt" x="48" y="150" text-anchor="middle" transform="rotate(-90 48 150)">Value · agents live →</text>
+  </svg>
+  <div class="dgm-cap">Ship the first agent, prove value, reinvest the savings - each wave funds the next. In production every agent keeps improving, so value <b>compounds</b> rather than plateaus.</div>
+</div>`;}
+
+/* ---------- value-chain AI maturity map (post-closing screen) ---------- */
+const vcLabels = { banking:'Banking', lifesci:'Life Sciences', insurance:'Insurance', travel:'Travel' };
+const valueChains = {
+  banking:{ name:'Meridian Bank', bu:'Retail & Business Banking',
+    sub:'~46% of group revenue · Everyday banking, lending and payments for 4.2m personal and small-business customers',
+    stages:[
+      {n:'Marketing & Acquisition', p:[['Campaign targeting','f'],['Offer personalisation','f'],['Lead scoring','p'],['Content generation','f'],['Pre-qualification','p']]},
+      {n:'Onboarding & KYC', p:[['Identity verification','f'],['Document extraction','f'],['AML screening','p'],['Customer risk rating','p'],['Account opening','p']]},
+      {n:'Lending & Underwriting', p:[['Application intake','f'],['Credit decisioning','p'],['Affordability checks','p'],['Property valuation','n'],['Loan-document generation','p'],['Exception review','n']]},
+      {n:'Payments & Transactions', p:[['Payment processing','f'],['Disputes & chargebacks','p'],['Direct debits / standing orders','f'],['Reconciliation','f'],['Sanctions screening','p']]},
+      {n:'Servicing & Contact Centre', p:[['Tier-1 inquiries','f'],['Self-service assistant','f'],['Card management','f'],['Complaint handling','p'],['Statement & letter generation','f'],['Appointment routing','f']]},
+      {n:'Collections & Recoveries', p:[['Early-arrears outreach','p'],['Repayment-plan negotiation','p'],['Hardship assessment','n'],['Recoveries case prep','p']]},
+      {n:'Fraud & Financial Crime', p:[['Transaction monitoring','f'],['Alert triage','p'],['Investigation support','p'],['SAR drafting','p']]},
+      {n:'Finance, Risk & Compliance', p:[['Regulatory reporting','p'],['Reconciliations','f'],['Model validation support','n'],['Audit evidence prep','p'],['Procurement ops','f']]}
+    ],
+    caps:[
+      {t:'Always-on money coaching', d:'Personalised, proactive guidance for every customer — driving engagement and cross-sell.'},
+      {t:'Embedded instant lending', d:'Sub-minute credit decisions at partner point-of-sale — a new origination channel.'},
+      {t:'SME cashflow intelligence', d:'AI cashflow and working-capital insight sold to business customers as a paid tier.'},
+      {t:'Fraud-signal network', d:'Anonymised real-time fraud intelligence packaged as a shared service for partners.'}
+    ],
+    plat:[['Marketing & Acquisition','Claude · CDP copilots · content studio'],['Onboarding & KYC','IDV AI · document-AI · AML copilots'],['Lending & Risk','Decisioning AI · model copilots · agentic review'],['Servicing & Contact Centre','Claude · voice & chat copilots · Genesys'],['Platform / SDLC','Claude Code · Copilot · Cursor']],
+    stats:[{k:'L0 → L3',d:'Target shift: from tool-assisted tasks to AI-executed activities across the chain'},{k:'3 stages',d:'Lending, Fraud & Compliance hold the highest value but the tightest audit-trail constraints'},{k:'1 OpCo',d:'Prove the pattern in Retail Banking, then replicate across Cards, Wealth and Business Banking'}]
+  },
+  lifesci:{ name:'Aldermoor Therapeutics', bu:'Specialty Pharmaceuticals — Development to Commercial',
+    sub:'~52% of group revenue · Brings specialty medicines from late-stage development to market across 30+ countries',
+    stages:[
+      {n:'Discovery & Translational', p:[['Target identification','p'],['Biomarker mining','f'],['Compound screening','f'],['Translational modelling','p']]},
+      {n:'Preclinical', p:[['Tox study design','p'],['In-vivo data analysis','f'],['Preclinical reporting','f'],['IND-enabling package','p']]},
+      {n:'Clinical Operations', p:[['Protocol design','p'],['Site selection','p'],['Patient recruitment','p'],['Trial monitoring','f'],['Clinical-data cleaning','f'],['CSR drafting','p']]},
+      {n:'Regulatory Affairs', p:[['Submission drafting','p'],['Labeling & claims','n'],['Reg intelligence','f'],['Health-authority queries','p'],['Lifecycle variations','p']]},
+      {n:'CMC & Manufacturing', p:[['Process development','p'],['Batch-record review','p'],['Demand forecasting','f'],['Supplier qualification','p'],['Deviation handling','p']]},
+      {n:'Quality & Pharmacovigilance', p:[['Batch-release review','n'],['Complaint triage','f'],['Adverse-event intake','f'],['Signal detection','p'],['CAPA drafting','p'],['SOP authoring','p']]},
+      {n:'Commercial & Market Access', p:[['Account targeting','f'],['Payer-dossier prep','p'],['Pricing analytics','n'],['Promotional content (MLR)','n'],['Field-force enablement','f']]},
+      {n:'Medical Affairs & Patient Support', p:[['Medical-information responses','p'],['KOL insights','p'],['Patient-support triage','p'],['Real-world-evidence synthesis','f']]}
+    ],
+    caps:[
+      {t:'In-silico assay & molecule design', d:'Generative design of assays and candidates — monetise design IP and platform access.'},
+      {t:'Always-on medical information', d:'Instant, compliant responses to clinicians at global scale — a new engagement channel.'},
+      {t:'Real-world-evidence as a service', d:'De-identified outcomes synthesised into insight for payers and research partners.'},
+      {t:'Autonomous pharmacovigilance', d:'End-to-end adverse-event intake and triage at near-zero marginal cost.'}
+    ],
+    plat:[['Discovery & Preclinical','Claude · Benchling AI · research copilots'],['Clinical & Regulatory','RegTech AI · eTMF copilots · agentic review'],['CMC & Quality','MES AI · QMS copilots · vision QC'],['Commercial & Medical','CRM AI · MLR copilots · Veeva'],['Platform / SDLC','Claude Code · Copilot · Cursor']],
+    stats:[{k:'L0 → L3',d:'Target shift: from tool-assisted tasks to AI-executed activities across the chain'},{k:'3 stages',d:'Regulatory, Quality & Clinical hold the highest value but the tightest audit-trail constraints'},{k:'1 OpCo',d:'Prove the pattern in Specialty Pharma, then replicate across the therapeutic portfolio'}]
+  },
+  insurance:{ name:'Beacon Mutual', bu:'Personal Lines — Home & Motor',
+    sub:'~38% of group GWP · Home and motor cover for 2.6m personal policyholders',
+    stages:[
+      {n:'Product & Pricing', p:[['Rating-model development','p'],['Pricing analytics','p'],['Peril / risk modelling','p'],['Wording & coverage design','n']]},
+      {n:'Distribution & Quote', p:[['Quote generation','f'],['Aggregator integration','f'],['Lead scoring','f'],['Personalised offers','f']]},
+      {n:'Underwriting', p:[['Risk assessment','p'],['Evidence / document extraction','f'],['Referral triage','p'],['Exposure accumulation','p']]},
+      {n:'Policy Administration', p:[['Policy issuance','f'],['Mid-term adjustments','f'],['Renewals','f'],['Endorsements & documents','f']]},
+      {n:'Claims — FNOL', p:[['First-notice-of-loss intake','f'],['Triage & segmentation','f'],['Coverage validation','p'],['Liability assessment','n']]},
+      {n:'Claims Handling', p:[['Damage estimation','f'],['Repair / supplier assignment','f'],['Settlement calculation','p'],['Payment processing','f'],['Subrogation','p']]},
+      {n:'Fraud & SIU', p:[['Claims-fraud detection','f'],['Alert triage','p'],['Investigation support','p'],['Network / link analysis','p']]},
+      {n:'Service, Finance & Reinsurance', p:[['Customer inquiries','f'],['Complaints','p'],['Reinsurance reporting','p'],['Reserving support','n'],['Regulatory reporting','p']]}
+    ],
+    caps:[
+      {t:'Instant photo-to-settlement', d:'AI estimates damage and settles simple claims in minutes — a step-change in experience.'},
+      {t:'Usage-based real-time pricing', d:'Telematics-driven dynamic pricing and cover, sold as new product tiers.'},
+      {t:'Proactive risk prevention', d:'IoT + AI alerts that prevent losses (leaks, theft), sold as a value-add service.'},
+      {t:'Fraud-intelligence network', d:'Shared, anonymised fraud signals offered across the market as a service.'}
+    ],
+    plat:[['Product & Pricing','Actuarial AI · pricing copilots'],['Distribution & Underwriting','Quote AI · document-AI · agentic review'],['Claims','Vision estimation AI · claims copilots · Guidewire'],['Service & SIU','Claude · contact-centre copilots · fraud-graph AI'],['Platform / SDLC','Claude Code · Copilot · Cursor']],
+    stats:[{k:'L0 → L3',d:'Target shift: from tool-assisted tasks to AI-executed activities across the chain'},{k:'3 stages',d:'Underwriting, Claims liability & Reserving hold the highest value but the tightest constraints'},{k:'1 OpCo',d:'Prove the pattern in Personal Lines, then replicate across Commercial and Specialty'}]
+  },
+  travel:{ name:'Voyara Travel', bu:'Leisure Travel Marketplace (OTA)',
+    sub:'~61% of group revenue · Flights, hotels and packages for 18m trips a year',
+    stages:[
+      {n:'Supply & Merchandising', p:[['Content ingestion','f'],['Rate / inventory mapping','f'],['Dynamic packaging','f'],['Merchandising & ranking','p']]},
+      {n:'Search & Booking', p:[['Search relevance','f'],['Fare / price assembly','f'],['Booking orchestration','f'],['Payment-fraud screening','p']]},
+      {n:'Ancillaries & Upsell', p:[['Offer personalisation','f'],['Cross-sell (seats, bags, insurance)','f'],['Bundling','f'],['Loyalty offers','f']]},
+      {n:'Pre-Trip Servicing', p:[['Itinerary management','f'],['Visa / document guidance','n'],['Check-in reminders','f'],['Pre-trip upsell','f']]},
+      {n:'Disruption Management', p:[['Schedule-change handling','f'],['Rebooking','p'],['Proactive notifications','f'],['Refund eligibility','p']]},
+      {n:'Customer Care', p:[['Tier-1 inquiries','f'],['Virtual travel assistant','f'],['Complaint handling','p'],['Multilingual support','f']]},
+      {n:'Loyalty & Retention', p:[['Tier management','f'],['Personalised recommendations','f'],['Churn prediction','f'],['Campaign generation','f']]},
+      {n:'Revenue, Partner & Finance', p:[['Revenue management','p'],['Supplier reconciliation','f'],['Commission / settlement','f'],['Fraud chargebacks','p'],['Reg & tax filings','n']]}
+    ],
+    caps:[
+      {t:'Autonomous trip concierge', d:'An always-on agent that plans, books and re-books end-to-end — a premium tier.'},
+      {t:'Dynamic disruption recovery', d:'Instant automated rebooking and compensation — sold as a traveller guarantee.'},
+      {t:'Hyper-personalised merchandising', d:'Individualised packaging and offers at scale — higher attach rate and margin.'},
+      {t:'Travel intelligence for partners', d:'Demand and pricing insight packaged for hotels and airlines as a paid service.'}
+    ],
+    plat:[['Supply & Merchandising','Pricing AI · content copilots'],['Search & Booking','Search AI · booking orchestration · fraud screening'],['Care & Disruption','Claude · virtual travel assistant · Genesys'],['Loyalty & Revenue','CRM AI · revenue-management copilots'],['Platform / SDLC','Claude Code · Copilot · Cursor']],
+    stats:[{k:'L0 → L3',d:'Target shift: from tool-assisted tasks to AI-executed activities across the chain'},{k:'3 stages',d:'Search, Booking & Care are already highly delegated; revenue and compliance keep humans in the loop'},{k:'1 OpCo',d:'Prove the pattern in the Leisure Marketplace, then replicate across Corporate and Supply'}]
+  }
 };
 
-let answered = false;
-let isCorrect = false;
-
-function startQuiz() {
-  document.getElementById('start-screen').classList.add('hidden');
-  const quizScreen = document.getElementById('quiz-screen');
-  quizScreen.classList.remove('hidden');
-
-  document.getElementById('question-text').textContent = question.question;
-
-  const grid = document.getElementById('options-grid');
-  grid.innerHTML = '';
-  const letters = ['A', 'B', 'C'];
-  question.options.forEach((opt, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'option-btn';
-    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span>${opt}`;
-    btn.onclick = () => selectAnswer(i);
-    grid.appendChild(btn);
-  });
+function maturityHTML(idx){
+  const tabs = Object.keys(vcLabels).map((k,i)=>`<button class="vcm-tab${i===0?' on':''}" data-vcm="${k}">${vcLabels[k]}</button>`).join('');
+  return `<section class="screen vcm-screen" data-i="${idx}" style="--accent:var(--epam)">
+    <div class="inner vcm">
+      <div class="vcm-eyebrow">Value-Chain AI Maturity Map · Agentic Transformation</div>
+      <p class="vcm-intro">The framework applied end-to-end: how far a business unit's value chain is delegated to AI today — and where new value comes next. Switch industry to compare.</p>
+      <div class="vcm-tabs">${tabs}</div>
+      <div id="vcmContent"></div>
+    </div>
+  </section>`;
 }
 
-function selectAnswer(selected) {
-  if (answered) return;
-  answered = true;
-  isCorrect = selected === question.answer;
-
-  const buttons = document.querySelectorAll('.option-btn');
-  buttons.forEach((btn, i) => {
-    btn.disabled = true;
-    if (i === question.answer) btn.classList.add('correct');
-    else if (i === selected && !isCorrect) btn.classList.add('wrong');
-  });
-
-  const fb = document.getElementById('answer-feedback');
-  fb.className = `answer-feedback ${isCorrect ? 'correct' : 'wrong'} visible`;
-  fb.innerHTML = `<strong>${isCorrect ? '✓ Correct!' : '✗ Not quite.'}</strong> ${question.explanation}`;
-
-  const nextBtn = document.getElementById('btn-next');
-  nextBtn.classList.remove('hidden');
-  nextBtn.classList.add('visible');
+function renderMaturity(key){
+  const d = valueChains[key]; if(!d) return;
+  let full=0, part=0, none=0;
+  d.stages.forEach(s=> s.p.forEach(c=> c[1]==='f'?full++:c[1]==='p'?part++:none++));
+  const tot = full+part+none || 1;
+  const eff = Math.round((full + part*0.5)/tot*100);
+  const cols = d.stages.map(s=>{
+    const cells = s.p.map(c=>`<div class="vcm-cell ${c[1]}">${c[0]}</div>`).join('');
+    return `<div class="vcm-col"><div class="vcm-col-h">${s.n}</div>${cells}</div>`;
+  }).join('');
+  const caps = d.caps.map(c=>`<div class="vcm-cap"><h4>${c.t}</h4><p>${c.d}</p></div>`).join('');
+  const plat = d.plat.map(r=>`<div class="row"><span class="a">${r[0]}</span><span class="t">${r[1]}</span></div>`).join('');
+  const stats = d.stats.map(s=>`<div class="vcm-stat"><b>${s.k}</b><span>${s.d}</span></div>`).join('');
+  const pf=full/tot*100, pp=part/tot*100, pn=none/tot*100;
+  document.getElementById('vcmContent').innerHTML = `
+    <div class="vcm-body">
+      <div class="vcm-head">
+        <div>
+          <h2>${d.name} — ${d.bu}</h2>
+          <div class="sub">${d.sub}</div>
+        </div>
+        <div class="vcm-kpi">
+          <div class="pct">${eff}%</div>
+          <div class="lab">Effective delegation</div>
+          <div class="vcm-bar"><i style="width:${pf}%;background:#1BA877"></i><i style="width:${pp}%;background:#2D5BD7"></i><i style="width:${pn}%;background:#AEB6CC"></i></div>
+          <div class="vcm-counts"><b>${full}</b> full · <b>${part}</b> partial · <b>${none}</b> not yet</div>
+        </div>
+      </div>
+      <div class="vcm-grid">${cols}</div>
+      <div class="vcm-panels">
+        <div class="vcm-panel">
+          <h3>New AI-Native Capabilities <span>for zero marginal labour cost</span></h3>
+          <div class="vcm-caps">${caps}</div>
+        </div>
+        <div class="vcm-panel">
+          <h3>Agentic Platform Control Plane</h3>
+          <div class="vcm-plat">${plat}</div>
+        </div>
+      </div>
+      <div class="vcm-stats">${stats}</div>
+      <div class="vcm-legend">
+        <span><i class="f"></i>Fully delegated — AI executes</span>
+        <span><i class="p"></i>Partially delegated — AI assists</span>
+        <span><i class="n"></i>Not yet delegated</span>
+      </div>
+    </div>`;
 }
 
-function showResults() {
-  document.getElementById('quiz-screen').classList.add('hidden');
-  const rs = document.getElementById('results-screen');
-  rs.classList.remove('hidden');
+/* ---------- AI FinOps discipline (dedicated tabbed section, post-maturity) ---------- */
+const finopsTabs = { model:'The mental model', loop:'The operating loop', govern:'Instrument & govern' };
 
-  if (isCorrect) {
-    document.getElementById('result-icon').textContent = '🏆';
-    document.getElementById('results-title').innerHTML = 'Correct! <span>You\'re In!</span>';
-    document.getElementById('results-subtitle').textContent = 'You got it right — enter your details for your chance to win a luxury LEGO kit.';
-    setTimeout(showPrizeModal, 800);
-  } else {
-    document.getElementById('result-icon').textContent = '😅';
-    document.getElementById('results-title').textContent = 'Not Quite!';
-    document.getElementById('results-subtitle').textContent = 'EPAM has over 3,000 Salesforce certified experts globally. Why not have another go?';
+/* hero: the nine cost buckets - one metered, eight unmetered */
+function fnBuckets(){
+  const b=[['Token bill','metered · the invoice',1],['Retrieval & data','corpus · queries',0],['Orchestration','agents per task',0],
+    ['Inference infra','GPU · KV cache',0],['Eval & monitoring','tests · tracing',0],['Governance','regulatory',0],
+    ['Human labour','prompt eng · review',0],['Failure & waste','retries · shadow use',0],['Integration','model churn · rebuilds',0]];
+  const W=138,H=80,gx=[20,160,300],gy=[16,108,200];
+  const tiles=b.map((t,i)=>{const x=gx[i%3],y=gy[(i/3)|0];return `
+    <g class="pop" style="animation-delay:${(0.15+i*0.07).toFixed(2)}s">
+      <rect x="${x}" y="${y}" width="${W}" height="${H}" rx="10" class="${t[2]?'a-fill':''}" fill="${t[2]?'':'#F1F3F8'}" stroke="${t[2]?'none':'#E0E3EE'}"/>
+      <text x="${x+12}" y="${y+30}" font-size="12.5" font-weight="800" fill="${t[2]?'#fff':'#41475C'}">${t[0]}</text>
+      <text x="${x+12}" y="${y+48}" font-size="9.5" font-weight="600" fill="${t[2]?'rgba(255,255,255,.85)':'#8990A6'}">${t[1]}</text>
+      <text x="${x+12}" y="${y+66}" font-size="8" font-weight="800" letter-spacing="1" fill="${t[2]?'#fff':'#AEB6CC'}">${t[2]?'METERED':'UNMETERED'}</text>
+    </g>`;}).join('');
+  return `<svg class="dgm" viewBox="0 0 460 296" role="img" aria-label="Nine cost buckets: one metered token bill and eight unmetered">${tiles}</svg>`;
+}
+
+/* hero: visibility -> attribution -> optimisation -> value (wide, full-width pipeline) */
+function fnLoop(){
+  const steps=[['1','Visibility','see spend per task & span'],['2','Attribution','every unit has a named owner'],
+    ['3','Optimisation','pull routing & caching'],['4','Value','report cost per outcome']];
+  const cx=[130,337,544,751], cy=76, r=27;
+  const nodes=steps.map((s,i)=>`
+    <g class="pop" style="animation-delay:${(0.3+i*0.18).toFixed(2)}s">
+      <circle cx="${cx[i]}" cy="${cy}" r="${r}" class="a-fill"/>
+      <text x="${cx[i]}" y="${cy+6}" text-anchor="middle" font-size="18" font-weight="800" fill="#fff">${s[0]}</text>
+      <text x="${cx[i]}" y="${cy+r+22}" text-anchor="middle" font-size="14" font-weight="700" fill="#10122B">${s[1]}</text>
+      <text x="${cx[i]}" y="${cy+r+40}" text-anchor="middle" font-size="11.5" font-weight="600" fill="#8990A6">${s[2]}</text>
+    </g>`).join('');
+  const arrows=[0,1,2].map(i=>`<line class="a-line draw" x1="${cx[i]+r+5}" y1="${cy}" x2="${cx[i+1]-r-5}" y2="${cy}" stroke-width="2.6" pathLength="100" style="animation-delay:${(0.5+i*0.18).toFixed(2)}s"/>`).join('');
+  return `<svg class="dgm" viewBox="0 0 880 172" role="img" aria-label="The operating loop from visibility to attribution to optimisation to value">
+    ${arrows}${nodes}
+    <text class="a-text" x="440" y="26" text-anchor="middle" font-size="12.5" font-weight="800">Optimise last, not first</text>
+  </svg>`;
+}
+
+/* hero: the gateway choke point + kill switch */
+function fnGateway(){
+  const srcs=[['Framework A',62],['Framework B',131],['Cron / event',200]];
+  const mdls=[['Small',62],['Mid',131],['Frontier',200]];
+  const sIn=srcs.map(s=>`<line class="a-line draw" x1="132" y1="${s[1]}" x2="186" y2="131" stroke-width="1.6" stroke-opacity=".55" pathLength="100" style="animation-delay:.5s"/>
+    <rect x="24" y="${s[1]-15}" width="108" height="30" rx="8" fill="#F4F5FA" stroke="#E0E3EE"/><text class="nl" x="78" y="${s[1]+4}" text-anchor="middle">${s[0]}</text>`).join('');
+  const mOut=mdls.map(m=>`<line class="a-line draw" x1="290" y1="131" x2="330" y2="${m[1]}" stroke-width="1.6" stroke-opacity=".55" pathLength="100" style="animation-delay:.7s"/>
+    <rect x="330" y="${m[1]-15}" width="106" height="30" rx="8" fill="#fff" class="a-stroke" stroke-width="1.6"/><text class="nl" x="383" y="${m[1]+4}" text-anchor="middle">${m[0]}</text>`).join('');
+  return `<svg class="dgm" viewBox="0 0 460 262" role="img" aria-label="Every call funnels through one gateway that stamps, caps, routes and emits telemetry, with a kill switch">
+    ${sIn}${mOut}
+    <rect x="186" y="46" width="104" height="170" rx="12" class="a-tint" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="238" y="90" text-anchor="middle" class="a-text" font-size="12" font-weight="800">AI</text>
+    <text x="238" y="106" text-anchor="middle" class="a-text" font-size="12" font-weight="800">Gateway</text>
+    <text x="238" y="132" text-anchor="middle" class="qs">stamp · trace</text>
+    <text x="238" y="146" text-anchor="middle" class="qs">cap · route</text>
+    <text x="238" y="160" text-anchor="middle" class="qs">cache · OTel</text>
+    <g class="pop" style="animation-delay:1s"><rect x="196" y="176" width="84" height="26" rx="13" fill="#FDECEC" stroke="#E5484D"/>
+    <text x="238" y="193" text-anchor="middle" font-size="10" font-weight="800" fill="#C62A2F">KILL SWITCH</text></g>
+    <text class="axt" x="78" y="238" text-anchor="middle">harnesses</text>
+    <text class="axt" x="383" y="238" text-anchor="middle">models</text>
+  </svg>`;
+}
+
+const finopsData = {
+  model:{ hero:fnBuckets, headline:'The token bill is one bucket of nine',
+    sub:'The metered invoice is a single line of the real cost. Eight more buckets are unmetered — and never silently zero.',
+    points:[['Structure is invariant; values are volatile','Every provider charges on the same five levers and every loop compounds the same way — so the shape of your model is portable.'],
+      ['Keep a dated price registry','A single hardcoded blended price is the #1 reason home-grown calculators rot within a quarter. Refresh the sheet, not the model.'],
+      ['Bound and compare, don’t forecast','Agent paths are stochastic — a precise predictive calculator isn’t achievable. Output ranges (P50/P95), then cap at runtime.']] },
+  loop:{ hero:fnLoop, headline:'Visibility → attribution → optimisation → value',
+    sub:'A consensus order of operations. The most common failure is jumping to the end — trying to spend less before you can see where the money goes.',
+    points:[['Measure → model → bound → calibrate','Run real trajectories first, model bottom-up, convert estimates into runtime caps, then back-test against the bill.'],
+      ['Attribution is the honest first milestone','Every unit of spend needs a named owner — target a direct-allocation % (usually >90%) before optimising anything.'],
+      ['Reconcile two ledgers','An operational usage ledger (matched daily, directionally) and a financial billing ledger (reconciled each cycle). They never match to the penny — that’s expected.']] },
+  govern:{ hero:fnGateway, headline:'Instrument once, at the gateway',
+    sub:'Put cost instrumentation and control at a shared SDK / AI gateway, not inside each agent framework — so attribution and control survive a change of harness or provider.',
+    points:[['Stamp every call','Owner, app, feature, tenant, environment, trace_id — plus provider usage and OpenTelemetry GenAI spans (version-pin them; they’re still experimental).'],
+      ['Hard controls, not soft budgets','Model allowlist, max tokens, max iterations, max tool calls, retry & per-tenant budgets — and a real kill switch. Some "budgets" are soft thresholds; automate enforcement.'],
+      ['Telemetry is not evaluation','OTel records that a call returned 1,200 tokens, not that they were right. Success rate needs a separate eval layer.']] }
+};
+
+function finopsHTML(idx){
+  const tabs = Object.keys(finopsTabs).map((k,i)=>`<button class="vcm-tab${i===0?' on':''}" data-fin="${k}">${finopsTabs[k]}</button>`).join('');
+  return `<section class="screen vcm-screen" data-i="${idx}" style="--accent:var(--epam)">
+    <div class="inner vcm">
+      <div class="vcm-eyebrow">AI FinOps · Governing the cost of agentic AI</div>
+      <p class="vcm-intro">Agentic AI is expensive in a way ordinary software isn’t — one task quietly becomes twenty model calls. You can’t forecast it precisely, so you measure it, bound it, and govern it against cost per <b>verified</b> outcome. The discipline behind Stage 4.</p>
+      <div class="vcm-tabs">${tabs}</div>
+      <div id="finopsContent"></div>
+    </div>
+  </section>`;
+}
+
+function renderFinops(key){
+  const d = finopsData[key]; if(!d) return;
+  const stacked = key==='loop';   // horizontal pipeline reads better full-width, points stacked beneath
+  const capCols = stacked ? 'repeat(auto-fit,minmax(210px,1fr))' : '1fr';
+  const points = d.points.map(p=>`<div class="vcm-cap"><h4>${p[0]}</h4><p>${p[1]}</p></div>`).join('');
+  document.getElementById('finopsContent').innerHTML = `
+    <div class="vcm-body">
+      <div class="vcm-head">
+        <div><h2>${d.headline}</h2><div class="sub">${d.sub}</div></div>
+      </div>
+      <div class="vcm-panels${stacked?' stack':''}">
+        <div class="vcm-panel">${d.hero()}</div>
+        <div class="vcm-panel"><div class="vcm-caps" style="grid-template-columns:${capCols}">${points}</div></div>
+      </div>
+    </div>`;
+}
+
+/* ---------- Stage 4 drill-down: "the cost model" (opt-in overlay) ---------- */
+/* Diagram 1 - the N² accumulation curve vs a linear baseline */
+function dgmN2(){
+  const N=10, base=4000, d=1500;
+  const tok=n=>base*n+d*n*(n-1)/2, lin=n=>base*n, maxV=tok(N);
+  const X=n=>60+(n-1)/(N-1)*370, Y=v=>250-v/maxV*200;
+  const ns=[...Array(N)].map((_,i)=>i+1);
+  const quad=ns.map(n=>`${X(n).toFixed(1)},${Y(tok(n)).toFixed(1)}`).join(' ');
+  const line=ns.map(n=>`${X(n).toFixed(1)},${Y(lin(n)).toFixed(1)}`).join(' ');
+  const area=`60,250 ${quad} ${X(N).toFixed(1)},250`;
+  const mk=(n,lab)=>`<circle class="a-fill pop" cx="${X(n).toFixed(1)}" cy="${Y(tok(n)).toFixed(1)}" r="5" style="animation-delay:${(1+n*0.03).toFixed(2)}s"/>
+    <text class="val" x="${X(n).toFixed(1)}" y="${(Y(tok(n))-9).toFixed(1)}" text-anchor="middle">${lab}</text>`;
+  return `
+<div class="diagram">
+  <div class="dgm-title">One task → many calls → N² cost</div>
+  <svg class="dgm" viewBox="0 0 460 290" role="img" aria-label="Cumulative input tokens growing with the square of the turn count">
+    <polygon points="${area}" class="a-tint" style="opacity:0;animation:fadein .7s ease .9s forwards"/>
+    <polyline class="line draw" points="${line}" stroke="#8990A6" stroke-dasharray="4 5" pathLength="100"/>
+    <polyline class="line a-line draw" points="${quad}" pathLength="100" style="animation-delay:.3s"/>
+    <text x="424" y="${(Y(lin(N))-6).toFixed(1)}" text-anchor="end" font-size="10" font-weight="700" fill="#6A7088">linear (no re-reads)</text>
+    ${mk(3,'easy')}${mk(6,'medium')}${mk(10,'hard')}
+    <line class="axis" x1="60" y1="40" x2="60" y2="250"/>
+    <line class="axis" x1="60" y1="250" x2="436" y2="250"/>
+    <text class="axt" x="248" y="270" text-anchor="middle">Turns per task (N) →</text>
+    <text class="axt" x="48" y="145" text-anchor="middle" transform="rotate(-90 48 145)">Cumulative input tokens →</text>
+  </svg>
+  <div class="dgm-cap">The agent re-sends its <b>whole conversation history every step</b>, so cost grows rapidly as tasks get longer. A "hard" task that takes 3.3× more steps ends up burning ~9× the tokens of an "easy" one.</div>
+</div>`;}
+
+/* Diagram 2a - caching collapses the coefficient */
+function dgmCache(){
+  const XC=n=>70+(n-1)/9*348, full=n=>(n*n)/100, cached=n=>(n+n*n*0.1)/100, YC=v=>236-v*196;
+  const ns=[...Array(10)].map((_,i)=>i+1);
+  const pf=ns.map(n=>`${XC(n).toFixed(1)},${YC(full(n)).toFixed(1)}`).join(' ');
+  const pc=ns.map(n=>`${XC(n).toFixed(1)},${YC(cached(n)).toFixed(1)}`).join(' ');
+  const band=`${pf} ${ns.slice().reverse().map(n=>`${XC(n).toFixed(1)},${YC(cached(n)).toFixed(1)}`).join(' ')}`;
+  return `
+<div class="diagram">
+  <div class="dgm-title">Caching · collapse the coefficient</div>
+  <svg class="dgm" viewBox="0 0 460 272" role="img" aria-label="Caching flattens the cost curve by serving the repeating prefix cheaply">
+    <polygon points="${band}" class="a-tint" style="opacity:0;animation:fadein .7s ease 1s forwards"/>
+    <polyline class="line draw" points="${pf}" stroke="#AEB6CC" style="stroke-width:2.6" pathLength="100"/>
+    <polyline class="line a-line draw" points="${pc}" style="stroke-width:2.8;animation-delay:.35s" pathLength="100"/>
+    <text x="426" y="54" text-anchor="end" font-size="11" font-weight="700" fill="#6A7088">full price</text>
+    <text class="a-text" x="426" y="194" text-anchor="end" font-size="11" font-weight="800">cached ~10%</text>
+    <line class="axis" x1="52" y1="34" x2="52" y2="236"/>
+    <line class="axis" x1="52" y1="236" x2="430" y2="236"/>
+    <text class="axt" x="241" y="258" text-anchor="middle">Turns →</text>
+  </svg>
+  <div class="dgm-cap">The repeating prefix is served from cache at <b>~10% of input price</b>, so only the new tokens each turn pay full price — the parabola flattens toward linear.</div>
+</div>`;}
+
+/* Diagram 3a - cost per verified outcome: agent vs human */
+function dgmOutcome(){
+  const sc=v=>v/4*300;
+  return `
+<div class="diagram">
+  <div class="dgm-title">Cost per resolved contact</div>
+  <svg class="dgm" viewBox="0 0 460 200" role="img" aria-label="Cost per resolved contact: AI 31 cents versus human 4 dollars">
+    <text class="nl" x="60" y="48" text-anchor="start">Human (as-is)</text>
+    <rect class="bar" x="60" y="56" width="${sc(4)}" height="34" rx="7" fill="#8990A6"/>
+    <text x="${(60+sc(4)+8).toFixed(0)}" y="78" font-size="14" font-weight="800" fill="#6A7088">$4.00</text>
+    <text class="a-text nl" x="60" y="120" text-anchor="start" style="font-weight:800">With the agent</text>
+    <rect class="bar a-fill" x="60" y="128" width="${sc(0.31).toFixed(1)}" height="34" rx="7" style="animation-delay:.25s"/>
+    <text class="a-text" x="${(60+sc(0.31)+8).toFixed(0)}" y="150" font-size="14" font-weight="800">$0.31</text>
+    <text class="qs" x="60" y="184">Fully-loaded cost ÷ verified resolution rate — the only unit an executive needs.</text>
+  </svg>
+  <div class="dgm-cap">Route and cache, divide by the <b>verified</b> success rate, and the scary token maths lands at a boring, defensible <b>~$0.31 vs $4.00</b> a human.</div>
+</div>`;}
+
+/* Diagram 3b - ROI scales with the adoption ramp */
+function dgmRamp(){
+  const X=p=>72+p/100*346, Y=r=>168-(r/11)*138;
+  const pts=[[10,1],[30,3],[50,5.2],[70,7.4],[100,10]].map(([p,r])=>`${X(p).toFixed(1)},${Y(r).toFixed(1)}`).join(' ');
+  const mk=(p,r,lab)=>`<circle class="a-fill pop" cx="${X(p).toFixed(1)}" cy="${Y(r).toFixed(1)}" r="5" style="animation-delay:${(0.9+p*0.006).toFixed(2)}s"/>
+    <text class="val" x="${X(p).toFixed(1)}" y="${(Y(r)-10).toFixed(1)}" text-anchor="middle">${lab}</text>`;
+  const tick=(p,lab)=>`<text class="qs" x="${X(p).toFixed(1)}" y="182" text-anchor="middle">${lab}</text>`;
+  return `
+<div class="diagram">
+  <div class="dgm-title">ROI × the adoption ramp</div>
+  <svg class="dgm" viewBox="0 0 460 200" role="img" aria-label="ROI multiple rising with adoption rate, three times at thirty percent to ten times at full adoption">
+    <polyline class="line a-line draw" points="${pts}" pathLength="100" style="animation-delay:.3s"/>
+    ${mk(30,3,'3×')}${mk(100,10,'10×')}
+    <line class="axis" x1="72" y1="24" x2="72" y2="168"/>
+    <line class="axis" x1="72" y1="168" x2="426" y2="168"/>
+    ${tick(30,'30%')}${tick(100,'100%')}
+    <text class="axt" x="248" y="196" text-anchor="middle">Adoption rate →</text>
+    <text class="axt" x="56" y="96" text-anchor="middle" transform="rotate(-90 56 96)">ROI ×</text>
+  </svg>
+  <div class="dgm-cap">A 10× case at full adoption is only <b>~3×</b> at 30% in month one. Model the ramp — and count only <b>verified</b>, redeployed savings.</div>
+</div>`;}
+
+const revealBlock = (label, inner) => `
+  <button class="reveal-btn" type="button">${svg('<polyline points="6 9 12 15 18 9"/>',15)}${label}</button>
+  <div class="reveal"><div class="reveal-card">${inner}</div></div>`;
+
+/* ---- Stage 2 "characterise the agent" diagrams ---- */
+/* archetype - the workload pinned down */
+function dgmArchetype(){
+  const attrs=[['Population','4.2m customers'],['Trigger','user / event / scheduled'],
+    ['Volume','~20k / month'],['Success','resolved or correctly routed'],
+    ['SLA / SLO¹ (performance target)','P95 < 60s'],['Risk class','high · regulated (EU AI Act / EO 14110)']];
+  const cols=[20,234], rows=[82,152,222], w=206, h=58;
+  const tiles=attrs.map((a,i)=>{const x=cols[i%2],y=rows[(i/2)|0];return `
+    <g class="pop" style="animation-delay:${(0.2+i*0.08).toFixed(2)}s">
+      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="#F4F6FA" stroke="#E4E7F0"/>
+      <text x="${x+14}" y="${y+23}" font-size="9" font-weight="800" letter-spacing="1" fill="#8990A6">${a[0].toUpperCase()}</text>
+      <text x="${x+14}" y="${y+43}" font-size="12.5" font-weight="700" fill="#10122B">${a[1]}</text>
+    </g>`;}).join('');
+  return `
+<div class="diagram">
+  <div class="dgm-title">Archetype · the workload pinned down</div>
+  <svg class="dgm" viewBox="0 0 460 292" role="img" aria-label="A workload archetype and its defining attributes">
+    <rect x="20" y="16" width="420" height="48" rx="12" class="a-tint" stroke="var(--accent)" stroke-width="1.3"/>
+    <text class="a-text" x="34" y="46" font-size="16" font-weight="800">Triage agent</text>
+    <text x="426" y="45" text-anchor="end" font-size="10" font-weight="700" fill="#8990A6">start with the process, not the model</text>
+    ${tiles}
+  </svg>
+  <div class="dgm-cap">Name the archetype, then pin down population, trigger, volume, <b>success definition</b>, SLA and <b>risk class</b> — success and risk are critical inputs, not footnotes.</div>
+  <div class="dgm-cap" style="margin-top:10px;font-size:11px;border-left-color:var(--line);color:var(--faint)"><sup>1</sup> <b>SLO (Service Level Objective)</b> — a specific, measurable performance target (e.g. 95% of requests resolved in under 60 seconds). It defines what good looks like and sits inside the broader SLA (Service Level Agreement), which is the contract that specifies consequences if that target is missed.</div>
+</div>`;}
+
+/* trace decomposed into spans - a token waterfall */
+function dgmTrace(){
+  const spans=[['Intent classify',8,0],['Plan',14,0],['Retrieve',22,0],['Tool calls ×2',26,0],
+    ['Sub-agent',40,1],['Synthesis',36,1],['Guardrail',10,0],['Final · memory',12,0]];
+  const x0=152, maxW=272, maxTok=40, rowH=27, y0=28;
+  const rows=spans.map((s,i)=>{const y=y0+i*rowH, bw=s[1]/maxTok*maxW;return `
+    <g class="pop" style="animation-delay:${(0.15+i*0.07).toFixed(2)}s">
+      <text x="140" y="${y+12}" text-anchor="end" font-size="11" font-weight="700" fill="#41475C">${s[0]}</text>
+      <rect x="${x0}" y="${y+1}" width="${bw.toFixed(0)}" height="15" rx="4" ${s[2]?'class="a-fill"':'fill="#C9D0E6"'}/>
+    </g>`;}).join('');
+  return `
+<div class="diagram">
+  <div class="dgm-title">One run, decomposed into spans</div>
+  <svg class="dgm" viewBox="0 0 460 268" role="img" aria-label="The spans of a single agent run with their token cost">
+    <line class="axis" x1="152" y1="22" x2="152" y2="248"/>
+    ${rows}
+    <text class="axt" x="288" y="264" text-anchor="middle">tokens per span →</text>
+  </svg>
+  <div class="dgm-cap">Sketch the path of one run and break it into steps. Each step is where cost accrues — and the number of steps here directly drives the overall cost.</div>
+</div>`;}
+
+/* token distribution - budget on the tail, not the mean */
+function dgmDist(){
+  const curve='60,236 82,198 100,118 120,72 136,60 162,88 192,122 222,152 262,180 302,197 342,209 384,217 432,224';
+  const area=`60,236 ${curve} 432,236`;
+  const tail=`302,236 302,197 342,209 384,217 432,224 432,236`;
+  const vline=(x,lab)=>`<line x1="${x}" y1="46" x2="${x}" y2="236" stroke="var(--accent)" stroke-width="1.3" stroke-dasharray="4 4" opacity=".75"/>
+    <text class="a-text" x="${x}" y="40" text-anchor="middle" font-size="10.5" font-weight="800">${lab}</text>`;
+  return `
+<div class="diagram">
+  <div class="dgm-title">Tokens per task · the whole distribution</div>
+  <svg class="dgm" viewBox="0 0 460 268" role="img" aria-label="A right-skewed distribution of tokens per task with mean, P90 and P99 marked">
+    <polygon points="${area}" class="a-tint2" style="opacity:0;animation:fadein .7s ease .8s forwards"/>
+    <polygon points="${tail}" fill="#FDECEC" style="opacity:0;animation:fadein .7s ease 1.1s forwards"/>
+    <polyline class="line a-line draw" points="${curve}" style="stroke-width:2.6" pathLength="100"/>
+    <line x1="166" y1="52" x2="166" y2="236" stroke="#9298AD" stroke-width="1.3" stroke-dasharray="4 4"/>
+    <text x="166" y="46" text-anchor="middle" font-size="10.5" font-weight="800" fill="#6A7088">mean</text>
+    ${vline(302,'P90')}${vline(398,'P99')}
+    <text x="366" y="120" text-anchor="middle" font-size="10" font-weight="800" fill="#C62A2F">the tail</text>
+    <line class="axis" x1="52" y1="236" x2="440" y2="236"/>
+    <text class="axt" x="246" y="260" text-anchor="middle">tokens per task →</text>
+  </svg>
+  <div class="dgm-cap">Budget for the worst-case tasks, not the average. The average hides the tail — runaway loops, retry storms, verbose tool schemas — where the real spend and risk live.</div>
+</div>`;}
+
+/* ---- Stage 3 "securing the agent" diagrams ---- */
+/* reference monitor: probabilistic agent -> gate -> consequence world */
+function dgmChokepoint(){
+  const cons=[['Tools',48],['Data',92],['Memory',136],['Send / act',180]];
+  const cbox=cons.map(c=>`<rect x="332" y="${c[1]}" width="104" height="30" rx="8" fill="#fff" class="a-stroke" stroke-width="1.5"/>
+    <text class="nl" x="384" y="${c[1]+19}" text-anchor="middle">${c[0]}</text>`).join('');
+  const clines=cons.map(c=>`<line class="a-line draw" x1="254" y1="134" x2="332" y2="${c[1]+15}" stroke-width="1.6" pathLength="100" style="animation-delay:.5s"/>`).join('');
+  return `
+<div class="diagram">
+  <div class="dgm-title">Secure the boundary, not the model</div>
+  <svg class="dgm" viewBox="0 -22 460 290" role="img" aria-label="A reference monitor mediating between a probabilistic agent and the consequence world">
+    <rect x="20" y="108" width="104" height="52" rx="12" fill="#F1F3F8" stroke="#DDE1EC"/>
+    <text class="nl" x="72" y="132" text-anchor="middle">Agent</text>
+    <text class="qs" x="72" y="147" text-anchor="middle">probabilistic</text>
+    <text class="qs" x="158" y="128" text-anchor="middle">proposes</text>
+    <line class="a-line draw" x1="124" y1="134" x2="190" y2="134" stroke-width="2" pathLength="100"/>
+    <rect x="194" y="40" width="58" height="188" rx="12" class="a-tint" stroke="var(--accent)" stroke-width="2"/>
+    <text class="a-text" x="223" y="134" text-anchor="middle" font-size="11.5" font-weight="800" transform="rotate(-90 223 134)">REFERENCE MONITOR</text>
+    <text class="a-text" x="223" y="248" text-anchor="middle" font-size="9" font-weight="700">always-invoked · tamper-proof · verifiable</text>
+    ${clines}${cbox}
+    <text class="qs" x="296" y="80" text-anchor="middle">permit</text>
+    <path d="M124,108 Q235,-50 330,52" fill="none" stroke="#E5484D" stroke-width="1.5" stroke-dasharray="4 4" opacity=".85"/>
+    <g stroke="#E5484D" stroke-width="2.2"><line x1="247" y1="6" x2="259" y2="18"/><line x1="259" y1="6" x2="247" y2="18"/></g>
+    <text x="223" y="-8" text-anchor="middle" font-size="9.5" font-weight="800" fill="#C62A2F">no side channel</text>
+  </svg>
+  <div class="dgm-cap">The model is probabilistic; the boundary is not. Every consequential action is mediated by a control that is <b>always-invoked, tamper-proof and verifiable</b> — the agent can’t reach a tool, datastore or send without passing it.</div>
+</div>`;}
+
+/* the Rule of 2 - never combine all three */
+function dgmRuleOf2(){
+  const circ=(cx,cy)=>`<circle cx="${cx}" cy="${cy}" r="68" fill="var(--accent)" fill-opacity=".12" stroke="var(--accent)" stroke-width="1.5"/>`;
+  return `
+<div class="diagram">
+  <div class="dgm-title">The Rule of 2 · never all three at once</div>
+  <svg class="dgm" viewBox="0 0 460 272" role="img" aria-label="Three overlapping circles: untrusted input, sensitive data, autonomous action; the triple overlap is the danger zone">
+    ${circ(230,100)}${circ(182,180)}${circ(278,180)}
+    <circle cx="230" cy="152" r="15" fill="#FDECEC" stroke="#E5484D" stroke-width="1.6"/>
+    <text x="230" y="157" text-anchor="middle" font-size="15" font-weight="800" fill="#C62A2F">!</text>
+    <text class="nl" x="230" y="24" text-anchor="middle">Untrusted input</text>
+    <text class="nl" x="120" y="256" text-anchor="middle">Sensitive data</text>
+    <text class="nl" x="344" y="256" text-anchor="middle">Autonomous action</text>
+  </svg>
+  <div class="dgm-cap">The rule blesses no pair — it names the one <b>trio</b> where an injection can run unattended; two legs just means an attacker can’t close the loop alone. Each leg still carries its own GDPR duties, and a pair is safe only while you can <b>guarantee</b> nothing untrusted ever reaches that context.</div>
+</div>`;}
+
+/* the seam: one boundary read by security, compliance and finops */
+function dgmSeam(){
+  const card=(x,y,t,s)=>`<rect x="${x}" y="${y}" width="150" height="54" rx="11" fill="#fff" class="a-stroke" stroke-width="1.5"/>
+    <text class="nl" x="${x+16}" y="${y+24}">${t}</text>
+    <text class="qs" x="${x+16}" y="${y+41}">${s}</text>`;
+  return `
+<div class="diagram">
+  <div class="dgm-title">One boundary, three readers</div>
+  <svg class="dgm" viewBox="0 0 460 268" role="img" aria-label="One instrumented boundary read by security, compliance and finops">
+    <line class="a-line draw" x1="200" y1="120" x2="122" y2="80" stroke-width="1.6" pathLength="100"/>
+    <line class="a-line draw" x1="260" y1="120" x2="338" y2="80" stroke-width="1.6" pathLength="100" style="animation-delay:.2s"/>
+    <line class="a-line draw" x1="230" y1="160" x2="230" y2="196" stroke-width="1.6" pathLength="100" style="animation-delay:.4s"/>
+    ${card(20,26,'Security','control of record')}
+    ${card(290,26,'Compliance','rationale &amp; logs')}
+    ${card(155,196,'FinOps','tokens · attribution')}
+    <rect x="175" y="112" width="110" height="48" rx="12" class="a-tint" stroke="var(--accent)" stroke-width="2"/>
+    <text class="a-text" x="230" y="132" text-anchor="middle" font-size="12" font-weight="800">The boundary</text>
+    <text class="qs" x="230" y="148" text-anchor="middle">one trace</text>
+  </svg>
+  <div class="dgm-cap">The security control point, the legal decision point and the cost meter are the <b>same boundary</b>. Instrument it once and one trace serves all three — the gateway you built for FinOps, read a third way.</div>
+</div>`;}
+
+/* operational: one capture -> two blast radii -> cleared for production */
+function dgmCapture(){
+  const blocks=[['A','Purpose & effects'],['B','Actions / tools'],['C','Data & memory'],['D','Input surface'],
+    ['E','Identity & authority'],['F','Affected persons'],['G','Role & change']];
+  const rows=blocks.map((b,i)=>{const y=78+i*20.5;return `<text class="a-text" x="42" y="${y}" font-size="11" font-weight="800">${b[0]}</text><text class="nl" x="60" y="${y}" font-size="10.5">${b[1]}</text>`;}).join('');
+  const pips=(x,y)=>`<circle cx="${x}" cy="${y}" r="4" fill="#1BA877"/><circle cx="${x+14}" cy="${y}" r="4" fill="#E8A13A"/><circle cx="${x+28}" cy="${y}" r="4" fill="#E5484D"/>`;
+  return `
+<div class="diagram">
+  <div class="dgm-title">One capture → two blast radii → cleared for production</div>
+  <svg class="dgm" viewBox="0 0 880 244" role="img" aria-label="One per-agent capture feeds a security and a legal blast radius, which drive the guardrails and compliance assessment and the release gate">
+    <rect x="24" y="30" width="190" height="192" rx="12" fill="#fff" class="a-stroke" stroke-width="1.5"/>
+    <text class="a-text" x="42" y="54" font-size="9.5" font-weight="800" letter-spacing="1">CAPTURE · PER AGENT</text>
+    ${rows}
+    <line class="a-line draw" x1="214" y1="118" x2="352" y2="83" stroke-width="1.8" pathLength="100"/>
+    <line class="a-line draw" x1="214" y1="130" x2="352" y2="175" stroke-width="1.8" pathLength="100" style="animation-delay:.15s"/>
+    <rect x="356" y="50" width="190" height="66" rx="12" class="a-tint" stroke="var(--accent)" stroke-width="1.6"/>
+    <text class="nl" x="374" y="76">Security blast radius</text>
+    <text class="qs" x="374" y="93">worst case if hijacked or errs</text>
+    ${pips(498,105)}
+    <rect x="356" y="142" width="190" height="66" rx="12" class="a-tint" stroke="var(--accent)" stroke-width="1.6"/>
+    <text class="nl" x="374" y="168">Legal blast radius</text>
+    <text class="qs" x="374" y="185">reach into people’s rights</text>
+    ${pips(498,197)}
+    <text class="a-text" x="451" y="127" text-anchor="middle" font-size="9.5" font-weight="800">friction dial</text>
+    <text class="qs" x="451" y="139" text-anchor="middle">control = larger radius</text>
+    <line class="a-line draw" x1="546" y1="83" x2="684" y2="114" stroke-width="1.8" pathLength="100" style="animation-delay:.3s"/>
+    <line class="a-line draw" x1="546" y1="175" x2="684" y2="140" stroke-width="1.8" pathLength="100" style="animation-delay:.3s"/>
+    <rect x="686" y="88" width="172" height="78" rx="13" class="a-fill"/>
+    <text x="772" y="116" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff">Guardrails +</text>
+    <text x="772" y="133" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff">assessment</text>
+    <text x="772" y="153" text-anchor="middle" font-size="9.5" font-weight="700" fill="rgba(255,255,255,.86)">cleared for production ✓</text>
+  </svg>
+  <div class="dgm-cap">You are not assessing risk in the abstract: <b>capture once</b>, size two blast radii, and match control and proof to the larger. The guardrails and the compliance assessment fall out — and both leave the <b>same evidence</b>.</div>
+</div>`;}
+
+/* ---------- Stage 1 drilldown: platform validation ---------- */
+function dgmPlatformMatrix(){
+  const sfC='#0047FF',altC='#4A71BD',dimC='#8453D2';
+  const rows=[
+    {dim:'System of Context',q:'Where does the data live?',
+     sf:'Core data natively in Salesforce CRM, Data Cloud or standard knowledge bases',
+     alt:'Owned file systems, local desktop files or databases outside Salesforce'},
+    {dim:'System of Work',q:'How do processes execute?',
+     sf:'Business logic already mapped in Salesforce Flows, Apex classes or MuleSoft APIs',
+     alt:'Dynamic code execution, isolated containers or non-Salesforce tooling'},
+    {dim:'System of Agency',q:'How does the agent reason?',
+     sf:'Pre-configured reasoning engine with built-in guardrails, audit trail and agent scripts',
+     alt:'Full control over the LLM stack, open-source orchestration or custom retrieval'},
+    {dim:'System of Engagement',q:'Where do humans interact?',
+     sf:'Slack, Service Cloud, Sales Cloud or standard embedded web chat',
+     alt:'Proprietary internal tools, command-line interfaces or standalone desktop apps'}
+  ];
+  const rHTML=rows.map((r,i)=>`
+    <div style="display:grid;grid-template-columns:180px 1fr 1fr;${i<3?'border-bottom:1px solid #E0E3EE':''}">
+      <div style="padding:16px 18px;background:#F4F5FA;border-right:1px solid #E0E3EE">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:${dimC};margin-bottom:5px;line-height:1.3">${r.dim}</div>
+        <div style="font-size:11px;color:#7A80A0;font-style:italic;line-height:1.4">${r.q}</div>
+      </div>
+      <div style="padding:16px 18px;background:#F0F4FF;border-right:1px solid #E0E3EE">
+        <span style="font-size:12.5px;color:#1A1F36;line-height:1.6;display:block">${r.sf}</span>
+      </div>
+      <div style="padding:16px 18px;background:#F8F9FC">
+        <span style="font-size:12.5px;color:#1A1F36;line-height:1.6;display:block">${r.alt}</span>
+      </div>
+    </div>`).join('');
+  return `<div style="border:1.5px solid #E0E3EE;border-radius:12px;overflow:hidden;font-family:inherit">
+    <div style="display:grid;grid-template-columns:180px 1fr 1fr;border-bottom:2px solid #E0E3EE">
+      <div style="padding:12px 18px;background:#ECEAF6"></div>
+      <div style="padding:12px 18px;background:#E8EDFF;border-right:1px solid #E0E3EE">
+        <span style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:${sfC}">Agentforce fits when&#8230;</span>
+      </div>
+      <div style="padding:12px 18px;background:#EEF0F8">
+        <span style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:${altC}">Consider alternatives when&#8230;</span>
+      </div>
+    </div>
+    ${rHTML}
+  </div>`;
+}
+function dgmPlatformScore(){
+  const items=[
+    {n:1,q:'Data &amp; context',check:'Is core data natively in Salesforce CRM or Data Cloud?'},
+    {n:2,q:'Workflow &amp; process',check:'Are key workflows already in Flows, Apex classes or MuleSoft APIs?'},
+    {n:3,q:'Reasoning &amp; control',check:'Is a governed, pre-built reasoning engine sufficient for this use case?'},
+    {n:4,q:'Interface &amp; handoff',check:'Do users interact via Slack, Service Cloud, Sales Cloud or web chat?'}
+  ];
+  const sfC='#0047FF',altC='#4A71BD';
+  const cards=items.map((item,i)=>`
+    <div style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:${i%2===0?'#F7F8FC':'#FFFFFF'};border:1px solid #E8EAF2;border-radius:10px">
+      <div style="width:34px;height:34px;border-radius:50%;background:#EDE8FA;border:2px solid #8453D2;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#8453D2;flex-shrink:0">${item.n}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:#1A1F36;margin-bottom:4px">${item.q}</div>
+        <div style="font-size:12px;color:#5C627A;line-height:1.4">${item.check}</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <span style="padding:6px 12px;background:#E8EDFF;border-radius:20px;font-size:11px;font-weight:700;color:${sfC};white-space:nowrap">YES &#8594; SF</span>
+        <span style="padding:6px 12px;background:#EEF0F8;border-radius:20px;font-size:11px;font-weight:700;color:${altC};white-space:nowrap">NO &#8594; ALT</span>
+      </div>
+    </div>`).join('');
+  return `<div>
+    <div class="dgm-title">Platform fit score card</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">${cards}</div>
+    <div class="dgm-cap" style="margin-top:16px">Yes to all four: Agentforce is a natural fit. Two or more no answers: a hybrid architecture or alternative platform warrants evaluation alongside.</div>
+  </div>`;
+}
+
+const drilldowns = {
+ platformvalidation:{
+  stage:1, accent:'#6B40C8', accentSoft:'rgba(107,64,200,.08)',
+  eyebrow:'Stage 1 · Platform validation', back:'Back to Use-Case Identification',
+  cta:{ t:'Go deeper: validate the platform choice',
+        s:'Before shortlisting use cases, confirm that Agentforce is the right platform for each use case. Score across the Four Systems: Context, Work, Agency and Engagement.',
+        go:'Open the platform validator' },
+  screens:[
+   { of:'Platform validation · 1 of 2', nav:'Four Systems', title:'Is Agentforce the right platform?',
+     lede:'Agentforce is a strong fit when your data, workflows and interfaces already live in the Salesforce ecosystem. Score across four dimensions — if two or more point to alternatives, a different stack deserves evaluation alongside Agentforce.',
+     grid:`<div class="drill-grid" style="grid-template-columns:1fr;max-width:740px"><div style="margin-top:8px">${dgmPlatformMatrix()}</div></div>` },
+   { of:'Platform validation · 2 of 2', nav:'Reading the score', title:'What your score means',
+     lede:'A score is a prompt, not a verdict. Use it to surface the right conversation early — before architecture is locked and rework becomes expensive.',
+     grid:`<div class="drill-grid"><div>${dgmPlatformScore()}</div><div>${
+       revealBlock('Key considerations',
+         `<ul>
+            <li>Two or more dimensions pointing to alternatives often signals a <b>hybrid architecture</b>: Agentforce as the orchestration layer, with external tools handling non-native systems.</li>
+            <li>All four pointing to Agentforce? You are in the sweet spot — native integration means lower build cost, built-in guardrails and no data leaving the platform.</li>
+            <li>The tightest constraints are <b>data residency rules</b> and <b>custom LLM requirements</b> — validate these first before committing to any platform.</li>
+          </ul>
+          <div class="reveal-note">Use this score to open a conversation with your architect — not to close one.</div>`)
+     }</div></div>` }
+  ]
+ },
+ agentmap: {
+  stage:2, accent:'#0047FF', accentSoft:'rgba(0,71,255,.08)',
+  eyebrow:'Stage 2 · Agentic mapping', back:'Back to Agentic Mapping',
+  cta:{ t:'Go deeper: characterise the agent',
+        s:'Behind "define an agent" sits the workload archetype, the trace decomposed into spans, and the measured distribution — the profile the cost model then prices.',
+        go:'Open the workload profile' },
+  screens:[
+   { of:'Workload profile · 1 of 3', nav:'Archetype', title:'Define the workload archetype',
+     lede:'Start with the business process, not the model. Name the archetype — triage agent, document reviewer, research agent — then pin down its population, trigger, volume and seasonality, its <b>success definition</b>, SLA/SLO&#185; (performance target) and <b>risk class</b>. The estimation pattern is archetype → volume → architecture → cost.',
+     grid:`<div class="drill-grid"><div>${dgmArchetype()}</div><div>${
+       revealBlock('Show the archetypes',
+         `<ul>
+            <li><b>Common archetypes</b>: triage agent, document reviewer, research agent, coding assistant, client-service copilot.</li>
+            <li><b>Trigger pattern</b> — user / event / scheduled / autonomous — shapes volume and concurrency.</li>
+            <li>Success definition and risk class are <b>critical inputs</b>, not footnotes: they decide the model tier and the guardrails.</li>
+          </ul>
+          <div class="reveal-note">Illustrative example — a customer-service triage agent.</div>`)
+     }</div></div>` },
+   { of:'Workload profile · 2 of 3', nav:'Trace → spans', title:'Decompose the trace into spans',
+     lede:'Sketch the expected path of a single run and break it into steps — intent, planning, retrieval, tool calls, sub-agents, synthesis, guardrails, retries, final and memory. Each step is a place cost accrues, and the number of steps you find here directly drives the overall cost.',
+     grid:`<div class="drill-grid"><div>${dgmTrace()}</div><div>${
+       revealBlock('Show the per-span estimates',
+         `<ul>
+            <li>For each step estimate: how many times it runs per task, roughly how much text goes in and out, tool cost, retry likelihood, and quality score.</li>
+            <li>Sub-agent branches and retries are where a tidy trace quietly multiplies — a branch can add ~200%.</li>
+          </ul>
+          <div class="reveal-note">These steps feed straight into Stage 4 — where the cost is calculated.</div>`)
+     }</div></div>` },
+   { of:'Workload profile · 3 of 3', nav:'Measure', title:'Measure — don’t assume the mean',
+     lede:'Run real tasks and measure what actually happens — don’t assume. Budget for your worst-case tasks, not the average: the average hides runaway loops, retry storms and bloated tool responses.',
+     grid:`<div class="drill-grid">
+       <div>${dgmDist()}
+         <div class="drill-onward" style="margin-top:16px">You’ve profiled the work.&nbsp;<a data-drill-onward="drill:costmodel">Now cost these traces → the cost model ${svg('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',15)}</a></div>
+       </div>
+       <div>${
+       revealBlock('Show the trap',
+         `<ul>
+            <li>A task burning <b>50,000 tokens</b> where 3,000 is normal is almost certainly looping — invisible without per-span accounting.</li>
+            <li>Precision comes from <b>measured runs</b>, not better guesses — outputs are ranges (low / high), never a single point estimate.</li>
+          </ul>`)}</div>
+     </div>` }
+  ]
+ },
+ security: {
+  stage:3, accent:'#0078C2', accentSoft:'rgba(0,120,194,.08)',
+  eyebrow:'Stage 3 · Security &amp; compliance', back:'Back to Security &amp; Compliance',
+  cta:{ t:'Go deeper: securing the agent',
+        s:'Behind guardrails and the AI Act sits one idea — secure the boundary, not the model — and one trace that serves security, law and cost at once.',
+        go:'Open the security model' },
+  screens:[
+   { of:'Securing the agent · 1 of 4', nav:'The boundary', title:'Secure the boundary, not the agent',
+     lede:'A chatbot <b>says</b> the wrong thing; an agent <b>does</b> it — irreversibly, at machine speed, with inherited privileges. The model is permanently probabilistic, so you don’t secure the model: you secure the <b>boundary</b> where an action produces a consequence.',
+     grid:`<div class="drill-grid"><div>${dgmChokepoint()}</div><div>${
+       revealBlock('Why the gate can’t live in the model',
+         `<ul>
+            <li>An LLM reads its instructions, the user’s input, tool outputs and retrieved documents as <b>one undifferentiated token stream</b> — there is no control/data separation.</li>
+            <li>So “read this and act” is structurally identical to “read this forged instruction and act”. <b>Prompt injection is structural, not a bug.</b></li>
+            <li>You cannot build a tamper-proof control out of another injectable model — an LLM-as-judge is defence-in-depth, never the control of record.</li>
+          </ul>`)
+     }</div></div>` },
+   { of:'Securing the agent · 2 of 4', nav:'The control plane', title:'The agent proposes; the control plane disposes',
+     lede:'At the boundary a deterministic policy engine intercepts every action and returns permit or deny — <b>fail-closed</b>. And the agent never holds the credential: authority is a scoped, ephemeral lease minted at the boundary, so a hijacked agent can’t reach for more.',
+     grid:`
+       <div class="drill-grid two-dgm">
+         <div class="route-wrap">
+           <div class="dgm-title">Every action is mediated</div>
+           <canvas id="medCanvas" class="route-canvas" width="460" height="272" role="img" aria-label="Proposed actions passing a deterministic gate that permits or denies"></canvas>
+           <div class="dgm-cap">The agent <b>proposes</b>; a deterministic decision point <b>permits or denies</b> — always invoked, <b>fail-closed</b> by default.</div>
+         </div>
+         <div>${dgmRuleOf2()}</div>
+       </div>
+       <div class="two-levers">
+         <div class="dgm-title">Solve what you can; contain the rest</div>
+         <p class="drill-sub" style="max-width:690px">Any risk you can express as a rule over <b>identity, action, parameters and data-flow</b> is <b>portable</b> — push it to the boundary and solve it there (tool misuse, over-privilege, exfiltration). The rest is <b>coupled to the model’s own reasoning</b>: risks like goal-drift or a jailbroken plan can only be caught by judging the model’s <b>intent</b> — which a deterministic boundary rule can’t see — so they stay model-bound and inherently fallible. Monitor them as defence-in-depth, and keep the blast radius small.</p>
+         ${revealBlock('The friction dial',
+           `<ul>
+              <li>Match control to <b>blast radius</b>: reversible &amp; low-stakes → monitor only; irreversible / costly / regulated → verify + human-in-the-loop.</li>
+              <li>The trap: if it’s too fast or subtle for a human to genuinely catch, <b>don’t add an approval gate</b> — it becomes a rubber stamp (automation bias). <b>Prevent instead</b>: make it reversible, sandbox it, cap the blast radius.</li>
+            </ul>
+            <div class="reveal-note">Killing the parent doesn’t recall the children — a runaway agent tree needs layered containment (scope-limit, quarantine, rollback), not a single off-switch.</div>`)}
+       </div>` },
+   { of:'Securing the agent · 3 of 4', nav:'The seam', title:'One boundary, three readers',
+     lede:'The security control point, the legal decision point and the cost meter are the <b>same boundary</b>. Instrument it once and one trace is the security control-of-record, the AI regulation / data privacy rationale <em>and</em> the cost record — regardless of which jurisdiction applies. Classify by <b>effect on people</b>, and prove it with traces — not policy promises.',
+     grid:`<div class="drill-grid">
+       <div>${dgmSeam()}
+         <div class="drill-onward" style="margin-top:16px"><a data-drill-onward="finops:govern">See it as the FinOps gateway ${svg('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',15)}</a></div>
+       </div>
+       <div>${
+       revealBlock('What the boundary must emit',
+         `<ul>
+            <li><b>Record-keeping</b> — the trace per run and per user satisfies EU AI Act Art. 12, US audit-trail expectations and equivalent obligations globally. <b>Human oversight</b> (Art. 14 / EO 14110) → the approval gate. <b>Automated decision rights</b> (GDPR Art. 22 / CCPA) → identity · input · logic · output, captured.</li>
+            <li>You can lose 1% of cost spans; you <b>cannot</b> lose the boundary decision on a consequential action — that is not 99% coverage, it is a control failure.</li>
+            <li><b>Substantial-modification trap</b>: let memory accumulate or fine-tune and the deployer becomes the provider across most jurisdictions — continuous learning is a legal event, not just an ML one.</li>
+          </ul>
+          <div class=”reveal-note”>Illustrative anchors (mid-2026): EU AI Act (high-risk duties), US EO 14110 (safety &amp; transparency), UK DSIT (permission-with-safeguards), GDPR Art. 22 / CCPA (automated decisions), PIPEDA (Canada). Regulations evolve — the boundary principle does not.</div>`)}</div>
+     </div>` },
+   { of:'Securing the agent · 4 of 4', nav:'The capture', title:'Operationalise it: one capture, two blast radii',
+     lede:'Theory becomes practice through one intake. Capture each agent once — seven blocks — and <b>two blast radii</b> fall out: the worst it can do if hijacked or in error (<b>security</b>), and how far its actions reach into people’s rights (<b>legal</b>). Control follows the larger radius, and the same capture drives both the guardrails and the compliance assessment.',
+     grid:`${dgmCapture()}
+       <div class="two-levers">
+         <div class="dgm-title">The capture sheet · seven blocks</div>
+         <p class="drill-sub" style="max-width:700px">Nothing is captured for its own sake — each block names what it powers, so the guardrails and the legal blast radius fall out mechanically. <b>Capture → size → mediate → evidence → gate.</b></p>
+         ${revealBlock('The seven blocks — and what each powers',
+           `<ul>
+              <li><b>A · Purpose &amp; effects</b> — every action that hits a person or the outside world → the boundary list; both radii.</li>
+              <li><b>B · Actions / tools</b> — read/write/destructive, reversibility, scope → the security radius; least-agency tokens.</li>
+              <li><b>C · Data &amp; memory</b> — categories, special-category, retention, erasure → the legal radius; the DPIA.</li>
+              <li><b>D · Input surface</b> — every channel, trusted or untrusted → the injection surface; the Rule-of-2 check.</li>
+              <li><b>E · Identity &amp; authority</b> — whose authority, standing credentials, sub-agents → scoped credentials; containment.</li>
+              <li><b>F · Affected persons &amp; jurisdiction</b> — who, where, solely-automated? → AI Act class; FRIA; the Article 22 path.</li>
+              <li><b>G · Role &amp; change</b> — provider or deployer; fine-tuning or memory drift → obligations; Article 25 reassessment.</li>
+            </ul>`)}
+         ${revealBlock('The release gate',
+           `<ul>
+              <li>Every consequential effect is mediated by a deterministic control with a test case.</li>
+              <li>Every threat has a named boundary control <b>and</b> the evidence it emits.</li>
+              <li>No unmanaged Rule-of-2 combination remains.</li>
+              <li>The integrated assessment is done; FRIA/DPIA where triggered; the Article 22 path built.</li>
+              <li>Red actions are <b>prevented or genuinely supervised</b>, not rubber-stamped.</li>
+              <li>The evidence schema is live and residual risk is accepted by a named owner.</li>
+            </ul>
+            <div class="reveal-note">Clear an agent for production only when all six hold — the gate that stops it reaching production unsafe.</div>`)}
+       </div>` }
+  ]
+ },
+ costmodel: {
+  stage:4, accent:'#4A71BD', accentSoft:'rgba(74,113,189,.08)',
+  eyebrow:'Stage 4 · The cost model', back:'Back to Business Case',
+  cta:{ t:'Go deeper: the cost model',
+        s:'Behind "model token economics" sits the N² cost curve, the two levers that bend it, and the worked example — the practitioner detail.',
+        go:'Open the cost model' },
+  screens:[
+  { of:'Cost model · 1 of 3', nav:'The N² curve', title:'Why agentic cost comes from nowhere',
+    lede:'A chatbot is <b>call-shaped</b> — one question, one answer. An agent is <b>trace-shaped</b>: one task becomes ten or twenty model calls, and it re-sends its entire growing context at every step. That accumulation, not the token price, is what makes the bill explode.',
+    grid:`<div class="drill-grid"><div>${dgmN2()}</div><div>${
+      revealBlock('Show the arithmetic',
+        `<div class="frm">total_input ≈ N·base + δ·N(N−1)/2</div>
+         <ul>
+           <li><b>N</b> = turns · <b>base</b> = the fixed prefix present from turn 1 · <b>δ</b> = tokens added each turn.</li>
+           <li>The <b>N(N−1)/2</b> term is O(N²): double the turns ≈ quadruple the accumulation.</li>
+           <li>Worked profile — Easy (3 turns) → <b>15,000</b> input · Medium (6) → <b>46,500</b> · Hard (10) → <b>130,000</b>.</li>
+         </ul>
+         <div class="reveal-note">Illustrative, mid-2026 token profile — the shape is the point, not the exact count.</div>`)
+    }</div></div>` },
+  { of:'Cost model · 2 of 3', nav:'The two levers', title:'The two levers that bend the curve',
+    lede:'On a managed model only the top two optimisation layers are yours to pull — <b>caching</b> and <b>routing</b> — and that is exactly where the sensitivity concentrates. One collapses the coefficient of the N² term; the other changes the price you pay per turn.',
+    grid:`
+      <div class="drill-grid two-dgm">
+        <div class="route-wrap">
+          <div class="dgm-title">Routing · one stream, two bills</div>
+          <canvas id="routeCanvas" class="route-canvas" width="460" height="272" role="img" aria-label="Tasks streaming through a router to right-sized models, with two diverging cost meters"></canvas>
+          <div class="route-meters compact">
+            <div class="rmeter leg"><span class="rmk">All-frontier</span><span class="rmv" id="rmLeg">$0.000</span></div>
+            <div class="rmeter mid"><span class="rmv save" id="rmSave">—</span><span class="rmk">cheaper</span></div>
+            <div class="rmeter cas"><span class="rmk">Routed</span><span class="rmv" id="rmCas">$0.000</span></div>
+          </div>
+          <div class="dgm-cap">Each task goes to the <b>cheapest model that will still succeed</b> on it — by task-type, a cheap classifier, or cheap-first-then-escalate. Two bills off one stream; the frontier earns only the hard tenth.</div>
+        </div>
+        <div>${dgmCache()}</div>
+      </div>
+      <div class="two-levers">
+        <div class="dgm-title">The two levers</div>
+        <p class="drill-sub" style="max-width:660px">Routing changes the <b>price per turn</b>; caching collapses the <b>N² coefficient</b> itself — which is why prompt caching is the single highest-leverage lever in an agent loop. Stack them and the blended cost falls furthest.</p>
+        ${revealBlock('Show the worked saving',
+          `<ul>
+             <li>Naïve — everything on frontier: blended <b>$0.213 / task</b>.</li>
+             <li>Add a cascading router (easy→small, medium→mid, hard→frontier): <b>$0.125</b> — <b>~41% off</b>.</li>
+             <li>Add prompt caching of the stable prefix: a further ~15–25% → optimised <b>~$0.10 / task</b>.</li>
+           </ul>
+           <div class="reveal-note">Illustrative pricing anchors (mid-2026): frontier ~$5/$25, mid ~$3/$15, small ~$0.10/$0.40 per 1M tokens; cached reads ~10% of input.</div>`)}
+      </div>` },
+  { of:'Cost model · 3 of 3', nav:'Cost per outcome', title:'The only number an executive needs',
+    lede:'A cost figure without a success rate is fiction. Divide fully-loaded cost by the <b>verified</b> resolution rate to get cost-per-outcome — then set it against the human cost. But the case is won or lost on the <b>value</b> side: adoption ramps, and freed time only counts if it is actually redeployed.',
+    grid:`<div class="drill-grid two-dgm"><div>${dgmOutcome()}</div><div>${dgmRamp()}</div></div>
+      ${revealBlock('Show the arithmetic',
+        `<div class="frm">effective_cost = fully_loaded_cost ÷ success_rate</div>
+         <ul>
+           <li>20,000 contacts/mo × ~$0.10 = <b>$2,000</b>; ÷ 0.85 verified ≈ <b>$2,350</b>; + ~$3,000 amortised overhead.</li>
+           <li>Fully-loaded ≈ <b>$5,350/mo</b> → <b>~$0.31</b> per resolved contact vs <b>$4.00</b> for a person.</li>
+           <li>Caveats: deflection ≠ resolution · adoption ramp (10× → 3× at 30%) · the counterfactual · displacement vs elimination.</li>
+         </ul>
+         <div class="reveal-note">Illustrative worked example — the method and the shape of the answer, not the exact £/$.</div>`)}
+      <div class="drill-onward">This costs <em>one</em> use case.&nbsp;<a data-drill-onward="finops">See the full FinOps discipline ${svg('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',15)}</a></div>` }
+  ]
+ }
+};
+
+function drillHTML(id, dd){
+  const backIc = svg('<polyline points="15 18 9 12 15 6"/>',16);
+  const screens = dd.screens.map((d,i)=>`
+    <section class="drill-screen${i===0?' active':''}" data-di="${i}">
+      <div class="drill-inner">
+        <div class="drill-head"><div class="of">${d.of}</div><h2>${d.title}</h2></div>
+        <p class="drill-lede">${d.lede}</p>
+        ${d.grid}
+      </div>
+    </section>`).join('');
+  const pills = dd.screens.map((d,i)=>`<button class="drill-step${i===0?' current':''}" data-dgo="${i}" type="button">
+      <span class="dnum">${i+1}</span><span class="dlbl">${d.nav}</span></button>`).join('');
+  return `<div class="drill" id="drill-${id}" data-drill="${id}" aria-hidden="true" style="--accent:${dd.accent};--accent-soft:${dd.accentSoft}">
+    <div class="drill-top">
+      <span class="drill-eyebrow">${dd.eyebrow}</span>
+      <nav class="drill-nav" aria-label="${dd.eyebrow} steps">${pills}</nav>
+      <button class="d-close" data-dclose type="button">${backIc}${dd.back}</button>
+    </div>
+    <div class="drill-body">${screens}</div>
+    <div class="drill-foot">
+      <button class="btn d-prev" type="button">${backIc}Back</button>
+      <span class="hint" style="margin:0 auto">Esc to exit · ← → to move</span>
+      <button class="btn primary d-next" type="button">Next ${svg('<polyline points="9 18 15 12 9 6"/>',16)}</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- assemble ---------- */
+const wrap = document.getElementById('wrap');
+let html = overviewHTML();
+stages.forEach((s,i)=>{ html += stageHTML(s,i+1); });
+html += closeHTML(stages.length+1);
+html += maturityHTML(stages.length+2);
+html += finopsHTML(stages.length+3);
+wrap.innerHTML = html;
+renderMaturity('banking');
+renderFinops('model');
+Object.entries(drilldowns).forEach(([id,dd])=> document.body.insertAdjacentHTML('beforeend', drillHTML(id,dd)));
+
+const TOTAL = stages.length+4; // overview + 6 + closing + maturity + FinOps (indices 0..9)
+const screens = [...wrap.querySelectorAll('.screen')];
+
+/* stepper */
+const stepper = document.getElementById('stepper');
+stepper.innerHTML = stages.map((s,k)=>
+  `<button class="step" data-go="${k+1}" style="--s-color:${s.color}">
+     <span class="num">${s.n}</span><span class="lbl">${s.key}</span>
+   </button>`).join('');
+
+/* dots */
+const dots = document.getElementById('dots');
+dots.innerHTML = screens.map((_,i)=>`<i data-go="${i}"></i>`).join('');
+
+/* appendix navigator - non-stage / reference screens. Add an entry per new appendix screen. */
+const appendices = [
+  { label:'Maturity Map', desc:'The framework applied across an industry value chain', icon:I.grid,  color:'#001965', i:stages.length+2 },
+  { label:'AI FinOps',    desc:'Governing the cost of agentic AI',                      icon:I.coins, color:'#1593B6', i:stages.length+3 }
+];
+const apx = document.getElementById('apx');
+apx.innerHTML = `
+  <button class="apx-btn" id="apxBtn" aria-haspopup="true" aria-expanded="false" aria-controls="apxMenu">
+    ${svg(I.book,16)}<span class="apx-lbl">Appendices</span>
+    <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+  <div class="apx-menu" id="apxMenu" role="menu" aria-label="Reference sections">
+    <div class="apx-hd">Beyond the six stages</div>
+    ${appendices.map(a=>`<button class="apx-item" role="menuitem" data-go="${a.i}">
+      <span class="apx-ic" style="background:${a.color}">${svg(a.icon,17)}</span>
+      <span class="apx-t">${a.label}</span>
+      <span class="apx-d">${a.desc}</span>
+    </button>`).join('')}
+  </div>`;
+const apxBtn = document.getElementById('apxBtn');
+const apxToggle = open => {
+  const o = open===undefined ? !apx.classList.contains('open') : open;
+  apx.classList.toggle('open', o);
+  apxBtn.setAttribute('aria-expanded', o);
+};
+apxBtn.addEventListener('click', e=>{ e.stopPropagation(); apxToggle(); });
+apx.addEventListener('click', e=>{ if(e.target.closest('.apx-item')) apxToggle(false); });
+document.addEventListener('click', e=>{ if(!apx.contains(e.target)) apxToggle(false); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && apx.classList.contains('open')){ e.stopPropagation(); e.preventDefault(); apxToggle(false); } }, true);
+
+const accentOf = i => (i>=1 && i<=stages.length) ? stages[i-1].color : getComputedStyle(document.documentElement).getPropertyValue('--epam');
+
+let cur = -1;
+function go(i){
+  i = Math.max(0, Math.min(TOTAL-1, i));
+  if(i===cur) return;
+  cur = i;
+  screens.forEach(sc=> sc.classList.toggle('active', +sc.dataset.i===i));
+  // restart point/loop animations on the active screen
+  const act = screens[i];
+  act.querySelectorAll('.stp').forEach((p,k)=>{ p.style.animation='none'; p.offsetHeight; p.style.animation=''; p.style.animationDelay=(0.05+k*0.09)+'s'; });
+
+  const accent = accentOf(i).trim();
+  document.documentElement.style.setProperty('--accent', accent);
+
+  // header steps
+  [...stepper.children].forEach((st,k)=>{
+    const sn=k+1;
+    st.classList.toggle('current', sn===i);
+    st.classList.toggle('done', i>sn || i===TOTAL-1);
+  });
+  // dots
+  [...dots.children].forEach((d,k)=> d.classList.toggle('on', k===i));
+  // appendix navigator: highlight when on one of its screens, close the menu on any move
+  const apxB = document.getElementById('apxBtn');
+  if(apxB){
+    document.getElementById('apx').classList.remove('open');
+    apxB.setAttribute('aria-expanded','false');
+    apxB.classList.toggle('on', appendices.some(a=>a.i===i));
+    document.querySelectorAll('.apx-item').forEach(it=> it.classList.toggle('on', +it.dataset.go===i));
   }
+  // progress
+  document.getElementById('bar').style.width = (i/(TOTAL-1)*100)+'%';
+  // footer buttons
+  back.disabled = i===0;
+  const last = i===TOTAL-1;
+  nextLabel.textContent = last ? 'Restart' : (i===0 ? 'Start the walkthrough' : 'Next');
+  nextIcon.style.display = last ? 'none' : '';
+  act.scrollTop = 0;
 }
 
-function restartQuiz() {
-  answered = false;
-  isCorrect = false;
-  document.getElementById('results-screen').classList.add('hidden');
-  document.getElementById('answer-feedback').className = 'answer-feedback';
-  document.getElementById('btn-next').classList.add('hidden');
-  document.getElementById('btn-next').classList.remove('visible');
-  document.getElementById('quiz-screen').classList.remove('hidden');
+/* nav wiring */
+const back = document.getElementById('back');
+const next = document.getElementById('next');
+const nextLabel = document.createElement('span'); nextLabel.textContent='Next';
+const nextIcon = next.querySelector('svg');
+next.insertBefore(nextLabel, nextIcon);
+next.childNodes.forEach(n=>{ if(n.nodeType===3) n.textContent=''; }); // clear stray text node
 
-  // Re-render options
-  const grid = document.getElementById('options-grid');
-  grid.innerHTML = '';
-  const letters = ['A', 'B', 'C'];
-  question.options.forEach((opt, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'option-btn';
-    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span>${opt}`;
-    btn.onclick = () => selectAnswer(i);
-    grid.appendChild(btn);
-  });
-}
-
-function showPrizeModal() {
-  document.getElementById('prize-modal').classList.add('visible');
-}
-
-function closeModal() {
-  document.getElementById('prize-modal').classList.remove('visible');
-}
-
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwdPqbFXMki3ypqiI-yWhvxIRDE0Ku_QYSLWzroM-kBs0moNsu6co0RqBAuT8WjayaO/exec';
-
-function submitEntry() {
-  const name = document.getElementById('entry-name').value.trim();
-  const email = document.getElementById('entry-email').value.trim();
-  const company = document.getElementById('entry-company').value.trim();
-  const jobTitle = document.getElementById('entry-jobtitle').value.trim();
-  const countryRaw = document.getElementById('entry-country').value;
-  const countryOther = document.getElementById('entry-country-other').value.trim();
-  const country = countryRaw === 'Other' ? (countryOther || '') : countryRaw;
-  const consent = document.getElementById('consent-checkbox').checked;
-  const btn = document.querySelector('.btn-enter');
-
-  let hasError = false;
-  document.getElementById('entry-name').style.borderColor = !name ? 'var(--wrong)' : 'var(--border)';
-  document.getElementById('entry-email').style.borderColor = !email ? 'var(--wrong)' : 'var(--border)';
-  document.getElementById('entry-jobtitle').style.borderColor = !jobTitle ? 'var(--wrong)' : 'var(--border)';
-  document.getElementById('entry-country').style.borderColor = !country ? 'var(--wrong)' : 'var(--border)';
-  if (countryRaw === 'Other' && !countryOther) {
-    document.getElementById('entry-country-other').style.borderColor = 'var(--wrong)';
-    hasError = true;
-  } else {
-    document.getElementById('entry-country-other').style.borderColor = 'var(--border)';
-  }
-  if (!name || !email || !jobTitle || !countryRaw) hasError = true;
-
-  const consentError = document.getElementById('consent-error');
-  const consentBox = document.getElementById('consent-checkbox');
-  if (!consent) {
-    consentBox.classList.add('error');
-    consentError.classList.add('visible');
-    hasError = true;
-  } else {
-    consentBox.classList.remove('error');
-    consentError.classList.remove('visible');
-  }
-
-  if (hasError) return;
-
-  document.getElementById('entry-name').style.borderColor = 'var(--border)';
-  document.getElementById('entry-email').style.borderColor = 'var(--border)';
-  document.getElementById('entry-jobtitle').style.borderColor = 'var(--border)';
-  document.getElementById('entry-country').style.borderColor = 'var(--border)';
-
-  btn.textContent = 'Submitting...';
-  btn.disabled = true;
-
-  fetch(GOOGLE_SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, company, jobTitle, country, consent: true })
-  })
-  .then(() => {
-    document.getElementById('modal-form-wrap').style.display = 'none';
-    document.getElementById('modal-success').classList.add('visible');
-  })
-  .catch(() => {
-    document.getElementById('modal-form-wrap').style.display = 'none';
-    document.getElementById('modal-success').classList.add('visible');
-  })
-  .finally(() => {
-    btn.textContent = 'Enter the Prize Draw';
-    btn.disabled = false;
-  });
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  const countrySelect = document.getElementById('entry-country');
-  countrySelect.classList.add('placeholder');
-  countrySelect.addEventListener('change', function() {
-    this.classList.toggle('placeholder', !this.value);
-    const otherField = document.getElementById('entry-country-other');
-    if (this.value === 'Other') {
-      otherField.style.display = 'block';
-    } else {
-      otherField.style.display = 'none';
-      otherField.value = '';
-    }
-  });
+back.onclick = ()=> go(cur-1);
+next.onclick = ()=> cur===TOTAL-1 ? go(0) : go(cur+1);
+document.addEventListener('click', e=>{
+  const g = e.target.closest('[data-go]');
+  if(g) go(+g.dataset.go);
+});
+document.addEventListener('click', e=>{
+  const t = e.target.closest('[data-vcm]');
+  if(t){ document.querySelectorAll('.vcm-tab').forEach(x=>x.classList.toggle('on', x===t)); renderMaturity(t.dataset.vcm); }
+});
+document.addEventListener('keydown', e=>{
+  if(drillOpen) return;
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); cur<TOTAL-1 && go(cur+1); }
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); go(cur-1); }
+  else if(e.key==='Home'||e.key==='Escape'){ go(0); }
+  else if(e.key==='End'){ go(TOTAL-1); }
+  else if(/^[1-7]$/.test(e.key)){ go(+e.key); }
 });
 
-document.getElementById('prize-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
+/* FinOps discipline tabs */
+document.addEventListener('click', e=>{
+  const t = e.target.closest('[data-fin]');
+  if(t){ document.querySelectorAll('[data-fin]').forEach(x=>x.classList.toggle('on', x===t)); renderFinops(t.dataset.fin); }
 });
+
+/* drill-down overlays: one generic controller, one open at a time */
+const drillEls = {};
+Object.keys(drilldowns).forEach(id=>{
+  const root=document.getElementById('drill-'+id);
+  drillEls[id]={ root, screens:[...root.querySelectorAll('.drill-screen')], steps:[...root.querySelectorAll('.drill-step')],
+    prev:root.querySelector('.d-prev'), next:root.querySelector('.d-next') };
+});
+let activeDrill=null, drillIdx=0, drillOpen=false;
+
+/* routing task-flow animation (cost-model screen 2): one stream, two diverging bills */
+const routeAnim = (()=>{
+  const cvs=document.getElementById('routeCanvas');
+  if(!cvs) return {start(){},stop(){}};
+  const ctx=cvs.getContext('2d');
+  const W=460,H=272, reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const SRC={x:44,y:136}, RTR={x:150,y:136};
+  const TIER={ small:{x:362,y:50,c:'#1BA877',r:16,label:'Small',share:'60%',price:'$0.10 / $0.40'},
+               mid:{x:362,y:136,c:'#3B6FD4',r:19,label:'Mid',share:'30%',price:'$3 / $15'},
+               frontier:{x:362,y:222,c:'#E5484D',r:23,label:'Frontier',share:'10%',price:'$5 / $25'} };
+  const TYPE={ easy:{c:'#1BA877',tier:'small',leg:0.094,cas:0.002},
+               medium:{c:'#3B6FD4',tier:'mid',leg:0.278,cas:0.167},
+               hard:{c:'#E5484D',tier:'frontier',leg:0.738,cas:0.738} };
+  const elLeg=document.getElementById('rmLeg'), elCas=document.getElementById('rmCas'), elSave=document.getElementById('rmSave');
+  let parts=[], leg=0, cas=0, done=0, frame=0, hold=0, raf=null, running=false, bagI=0;
+  // deterministic 60/30/10 bag so the live saving stays true to the ~41% headline
+  const BAG=['easy','easy','medium','easy','hard','easy','medium','easy','medium','easy'];
+  const roll=()=>BAG[bagI++ % BAG.length];
+  const meters=()=>{ elLeg.textContent='$'+leg.toFixed(3); elCas.textContent='$'+cas.toFixed(3);
+    elSave.textContent = leg>0.02 ? Math.round((1-cas/leg)*100)+'%' : '—'; };
+  const disc=(x,y,r,color)=>{ ctx.globalAlpha=.15;ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fillStyle=color;ctx.fill();ctx.globalAlpha=1;
+    ctx.lineWidth=1.8;ctx.strokeStyle=color;ctx.stroke(); };
+  const dot=(x,y,r,color)=>{ ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fillStyle=color;ctx.fill(); };
+  const label=(x,y,t,col,sz,wt)=>{ ctx.fillStyle=col;ctx.font=(wt||600)+' '+(sz||11)+'px "Nunito Sans",sans-serif';ctx.textAlign='center';ctx.fillText(t,x,y); };
+  const link=(a,b)=>{ ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke(); };
+  function scene(){
+    ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle='#E1E5EF';ctx.lineWidth=1.4;ctx.setLineDash([2,6]);
+    link(SRC,RTR); for(const k in TIER) link(RTR,TIER[k]); ctx.setLineDash([]);
+    disc(SRC.x,SRC.y,16,'#8A90A2'); label(SRC.x,SRC.y-25,'Tasks','#5C627A',11,700); label(SRC.x,SRC.y+28,'mixed difficulty','#9298AD',9,600);
+    disc(RTR.x,RTR.y,20,'#1593B6'); label(RTR.x,RTR.y-29,'Router','#5C627A',11,700); label(RTR.x,RTR.y+34,'cheapest that fits','#9298AD',9,600);
+    for(const k in TIER){const T=TIER[k]; disc(T.x,T.y,T.r,T.c); label(T.x,T.y-T.r-7,T.label+' · '+T.share,'#5C627A',11,700); label(T.x,T.y+T.r+14,T.price,'#9298AD',9,600);}
+  }
+  function step(){
+    scene();
+    parts.forEach(p=>{
+      const dx=p.tgt.x-p.x, dy=p.tgt.y-p.y, d=Math.hypot(dx,dy)||1, sp=3;
+      if(d<sp){ p.x=p.tgt.x;p.y=p.tgt.y;
+        if(p.stage===0){p.stage=1;p.tgt=TIER[TYPE[p.t].tier];}
+        else if(!p.done){p.done=true; leg+=TYPE[p.t].leg; cas+=TYPE[p.t].cas; done++; meters();}
+      } else { p.x+=dx/d*sp; p.y+=dy/d*sp; }
+      dot(p.x,p.y,3.8, p.stage===0 ? '#B4BCD2' : TYPE[p.t].c);   // grey until the router judges it
+    });
+    parts=parts.filter(p=>!p.done);
+    frame++;
+    if(done<60 && frame%7===0 && parts.length<20) parts.push({x:SRC.x,y:SRC.y,t:roll(),stage:0,tgt:RTR});
+    if(done>=60 && parts.length===0){ hold++; if(hold>90){leg=0;cas=0;done=0;hold=0;bagI=0;meters();} }
+    if(running) raf=requestAnimationFrame(step);
+  }
+  const size=()=>{ const dpr=Math.min(2,window.devicePixelRatio||1); cvs.width=W*dpr; cvs.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); };
+  function start(){ size(); parts=[];leg=0;cas=0;done=0;frame=0;hold=0;bagI=0;
+    if(reduce){ running=false; scene(); leg=0.213;cas=0.125;meters(); return; }
+    meters(); running=true; raf=requestAnimationFrame(step); }
+  function stop(){ running=false; if(raf){cancelAnimationFrame(raf);raf=null;} }
+  return {start,stop};
+})();
+
+/* mediation animation (security screen 2): proposed actions pass a deterministic gate that permits or denies */
+const medAnim = (()=>{
+  const cvs=document.getElementById('medCanvas');
+  if(!cvs) return {start(){},stop(){}};
+  const ctx=cvs.getContext('2d');
+  const W=460,H=272, reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const A='#2E6FD6', RED='#E5484D', GX=216;
+  const SRC={x:52,y:136}, TOOL={x:410,y:136};
+  let parts=[], frame=0, bagI=0, denyI=0, flash=null, raf=null, running=false;
+  const BAG=['p','p','p','p','p','d','p','p','p','p','p','p','d','p','p','p','p','p','p','d'];  // ~15% denied
+  const REASONS=[['delete_records()','irreversible'],['transfer_funds()','over lease scope'],
+    ['read secrets/*','not on allow-list'],['email → external','data-egress rule'],
+    ['spawn sub-agent','unverified'],['write prod DB','untrusted input']];
+  const roll=()=>BAG[bagI++ % BAG.length];
+  const dot=(x,y,r,c)=>{ ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fillStyle=c;ctx.fill(); };
+  const label=(x,y,t,c,sz,wt)=>{ ctx.fillStyle=c;ctx.font=(wt||600)+' '+(sz||11)+'px "Nunito Sans",sans-serif';ctx.textAlign='center';ctx.fillText(t,x,y); };
+  const rr=(x,y,w,h,r)=>{ ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath(); };
+  const ring=(x,y,r,c)=>{ ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.lineWidth=1.8;ctx.strokeStyle=c;ctx.stroke(); };
+  function scene(){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='rgba(46,111,214,.10)';ctx.strokeStyle=A;ctx.lineWidth=1.8;
+    rr(GX-16,52,32,166,10);ctx.fill();ctx.stroke();
+    label(GX,40,'Policy decision point',A,11.5,800);
+    label(GX,234,'deterministic · fail-closed','#9298AD',9,600);
+    if(flash){ ctx.globalAlpha=flash.t<80?1:Math.max(0,1-(flash.t-80)/28); label(GX,254,'× '+flash.a+'  —  '+flash.r,'#C62A2F',10,700); ctx.globalAlpha=1; }
+    ctx.globalAlpha=.14;dot(SRC.x,SRC.y,16,'#8A90A2');ctx.globalAlpha=1;ring(SRC.x,SRC.y,16,'#8A90A2');
+    label(SRC.x,SRC.y-24,'Agent','#5C627A',11,700);label(SRC.x,SRC.y+30,'proposes','#9298AD',9,600);
+    ctx.globalAlpha=.14;dot(TOOL.x,TOOL.y,16,A);ctx.globalAlpha=1;ring(TOOL.x,TOOL.y,16,A);
+    label(TOOL.x,TOOL.y-24,'Act','#5C627A',11,700);
+  }
+  function step(){
+    scene();
+    parts.forEach(p=>{
+      if(p.stage===0){ p.x+=2.6; if(p.x>=GX){ p.x=GX; if(p.verdict==='p'){p.stage=1;} else {p.stage=2;p.t=0; if(p.reason) flash={a:p.reason[0],r:p.reason[1],t:0};} } }
+      else if(p.stage===1){ const dx=TOOL.x-p.x, dy=TOOL.y-p.y, d=Math.hypot(dx,dy)||1, sp=2.8; if(d<sp){p.done=true;} else {p.x+=dx/d*sp;p.y+=dy/d*sp;} }
+      else { p.t++; if(p.t>30)p.done=true; }
+      if(p.stage===2){
+        ctx.globalAlpha=Math.max(0,1-p.t/30);
+        ctx.strokeStyle=RED;ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(p.x-4,p.y-4);ctx.lineTo(p.x+4,p.y+4);ctx.moveTo(p.x+4,p.y-4);ctx.lineTo(p.x-4,p.y+4);ctx.stroke();
+        ctx.globalAlpha=1;
+      } else {
+        dot(p.x,p.y,4, p.stage===0?'#B4BCD2':A);
+      }
+    });
+    parts=parts.filter(p=>!p.done);
+    if(flash){ flash.t++; if(flash.t>108) flash=null; }
+    frame++;
+    if(frame%15===0 && parts.length<12){ const v=roll(); const reason = v==='d'? REASONS[denyI++ % REASONS.length] : null;
+      const y=136+(((bagI*37)%80)-40); parts.push({x:SRC.x+16,y,stage:0,verdict:v,reason,t:0}); }
+    if(running) raf=requestAnimationFrame(step);
+  }
+  const size=()=>{ const dpr=Math.min(2,window.devicePixelRatio||1); cvs.width=W*dpr; cvs.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); };
+  function start(){ size(); parts=[];frame=0;bagI=0;denyI=0;flash=null; if(reduce){ running=false; scene(); return; } running=true; raf=requestAnimationFrame(step); }
+  function stop(){ running=false; if(raf){cancelAnimationFrame(raf);raf=null;} }
+  return {start,stop};
+})();
+
+function goDrill(k){
+  const D=drillEls[activeDrill]; if(!D) return;
+  k = Math.max(0, Math.min(D.screens.length-1, k));
+  drillIdx = k;
+  D.screens.forEach((s,i)=> s.classList.toggle('active', i===k));
+  D.steps.forEach((el,i)=>{ el.classList.toggle('current', i===k); el.classList.toggle('done', i<k); });
+  const act = D.screens[k];
+  act.querySelectorAll('.dgm .draw,.dgm .bar,.dgm .pop').forEach(el=>{ el.style.animation='none'; el.offsetHeight; el.style.animation=''; });
+  act.scrollTop = 0;
+  routeAnim.stop(); medAnim.stop();
+  if(activeDrill==='costmodel' && k===1) routeAnim.start();
+  else if(activeDrill==='security' && k===1) medAnim.start();
+  D.prev.style.visibility = k===0 ? 'hidden' : '';
+  D.next.style.visibility = k===D.screens.length-1 ? 'hidden' : '';
+}
+function openDrill(id){
+  if(!drillEls[id]) return;
+  if(activeDrill) closeDrill();
+  activeDrill=id; drillOpen=true;
+  const D=drillEls[id]; D.root.classList.add('open'); D.root.setAttribute('aria-hidden','false');
+  goDrill(0);
+}
+function closeDrill(){
+  if(!activeDrill) return;
+  const D=drillEls[activeDrill]; D.root.classList.remove('open'); D.root.setAttribute('aria-hidden','true');
+  routeAnim.stop(); medAnim.stop(); activeDrill=null; drillOpen=false;
+}
+document.addEventListener('click', e=>{
+  const cta=e.target.closest('[data-open-drill]'); if(cta){ openDrill(cta.dataset.openDrill); return; }
+  if(e.target.closest('[data-dclose]')){ closeDrill(); return; }
+  if(e.target.closest('.d-prev')){ goDrill(drillIdx-1); return; }
+  if(e.target.closest('.d-next')){ goDrill(drillIdx+1); return; }
+  const ds=e.target.closest('[data-dgo]'); if(ds){ goDrill(+ds.dataset.dgo); return; }
+  const rb=e.target.closest('.reveal-btn'); if(rb){ rb.classList.toggle('on'); rb.nextElementSibling.classList.toggle('show'); return; }
+  const on=e.target.closest('[data-drill-onward]'); if(on){ const t=on.dataset.drillOnward||'finops'; closeDrill();
+    if(t.indexOf('drill:')===0){ const id=t.slice(6); go(drilldowns[id].stage); openDrill(id); }
+    else if(t.indexOf('finops')===0){ go(TOTAL-1); const tab=t.split(':')[1]; if(tab){ document.querySelectorAll('[data-fin]').forEach(x=>x.classList.toggle('on', x.dataset.fin===tab)); renderFinops(tab); } }
+    else { go(TOTAL-1); } }
+});
+document.addEventListener('keydown', e=>{
+  if(!drillOpen) return;
+  if(e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); closeDrill(); }
+  else if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); e.stopPropagation(); goDrill(drillIdx+1); }
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); e.stopPropagation(); goDrill(drillIdx-1); }
+}, true);
+
+go(0);
 </script>
-
-<!-- PRIZE DRAW MODAL -->
-<div class="modal-overlay" id="prize-modal">
-  <div class="modal-box">
-    <span class="modal-trophy">🏆</span>
-    <div class="modal-title">You Got It!<br/><span>Enter to Win</span></div>
-    <div class="modal-body">
-      You answered correctly — you qualify to enter our prize draw to win one of <strong>2 luxury LEGO kits</strong>!<br/><br/>
-      Enter your details below and we'll be in touch if you're a winner.
-    </div>
-
-    <div id="modal-form-wrap">
-      <div class="modal-form">
-        <input class="modal-input" id="entry-name" type="text" placeholder="Full name" autocomplete="name"/>
-        <input class="modal-input" id="entry-email" type="email" placeholder="Work email address" autocomplete="email"/>
-        <input class="modal-input" id="entry-company" type="text" placeholder="Company" autocomplete="organization"/>
-        <input class="modal-input" id="entry-jobtitle" type="text" placeholder="Job title" autocomplete="organization-title"/>
-        <select class="modal-select placeholder" id="entry-country" autocomplete="country">
-          <option value="" disabled selected>Country</option>
-          <option value="Albania">Albania</option>
-          <option value="Andorra">Andorra</option>
-          <option value="Austria">Austria</option>
-          <option value="Belarus">Belarus</option>
-          <option value="Belgium">Belgium</option>
-          <option value="Bosnia and Herzegovina">Bosnia and Herzegovina</option>
-          <option value="Bulgaria">Bulgaria</option>
-          <option value="Canada">Canada</option>
-          <option value="Croatia">Croatia</option>
-          <option value="Cyprus">Cyprus</option>
-          <option value="Czech Republic">Czech Republic</option>
-          <option value="Denmark">Denmark</option>
-          <option value="Estonia">Estonia</option>
-          <option value="Finland">Finland</option>
-          <option value="France">France</option>
-          <option value="Germany">Germany</option>
-          <option value="Greece">Greece</option>
-          <option value="Hungary">Hungary</option>
-          <option value="Iceland">Iceland</option>
-          <option value="India">India</option>
-          <option value="Ireland">Ireland</option>
-          <option value="Italy">Italy</option>
-          <option value="Kosovo">Kosovo</option>
-          <option value="Latvia">Latvia</option>
-          <option value="Liechtenstein">Liechtenstein</option>
-          <option value="Lithuania">Lithuania</option>
-          <option value="Luxembourg">Luxembourg</option>
-          <option value="Malta">Malta</option>
-          <option value="Moldova">Moldova</option>
-          <option value="Monaco">Monaco</option>
-          <option value="Montenegro">Montenegro</option>
-          <option value="Netherlands">Netherlands</option>
-          <option value="North Macedonia">North Macedonia</option>
-          <option value="Norway">Norway</option>
-          <option value="Poland">Poland</option>
-          <option value="Portugal">Portugal</option>
-          <option value="Romania">Romania</option>
-          <option value="San Marino">San Marino</option>
-          <option value="Serbia">Serbia</option>
-          <option value="Slovakia">Slovakia</option>
-          <option value="Slovenia">Slovenia</option>
-          <option value="Spain">Spain</option>
-          <option value="Sweden">Sweden</option>
-          <option value="Switzerland">Switzerland</option>
-          <option value="Ukraine">Ukraine</option>
-          <option value="United Kingdom">United Kingdom</option>
-          <option value="United States">United States</option>
-          <option value="Other">Other</option>
-        </select>
-        <input class="modal-input" id="entry-country-other" type="text" placeholder="Please specify your country" style="display:none;"/>
-      </div>
-      <div class="consent-wrap">
-        <input class="consent-checkbox" type="checkbox" id="consent-checkbox"/>
-        <label class="consent-label" for="consent-checkbox">
-          I consent to EPAM Systems, Inc. ("EPAM") processing my personal information as set out in the <a href="https://www.epam.com/privacy-policy" target="_blank">Privacy Policy</a> for marketing purposes and therefore to be contacted via the contact information I provided. Given the global nature of EPAM's business, such processing may take place outside of my home jurisdiction. The consent can be withdrawn at any time under the contact in the <a href="https://www.epam.com/privacy-policy" target="_blank">Privacy Policy</a>.
-        </label>
-      </div>
-      <div class="consent-error" id="consent-error">You must agree to the privacy policy to enter the prize draw.</div>
-      <button class="btn-enter" onclick="submitEntry()">Enter the Prize Draw</button>
-      <br/><br/>
-      <button class="modal-skip" onclick="closeModal()">No thanks, skip</button>
-    </div>
-
-    <div class="modal-success" id="modal-success">
-      <span class="modal-success-icon">🎉</span>
-      <div class="modal-success-text">You're entered!</div>
-      <div class="modal-success-sub">Good luck — we'll be in touch after the event<br/>if you're one of our lucky winners.</div>
-      <br/>
-      <button class="modal-skip" onclick="closeModal()">Close</button>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
